@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cyber City Defender</title> <!-- Updated title here, replace with attacker/defender -->
+    <title>Cyber City Defender</title> <!-- Updated title here -->
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css">
     <style>
@@ -61,7 +61,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>Cyber City Defender</h1> <!-- Also updating the heading here -->
+    <h1>Cyber City Defender</h1> <!-- Updated heading here -->
     <div class="alert alert-primary" role="alert">
         Current Turn: {{ turn.capitalize() }}
     </div>
@@ -74,8 +74,42 @@
         <div class="col-md-6">
             <h2>Battle Actions</h2>
             <form action="/battle_action" method="post">
-                <button type="submit" class="btn btn-danger" name="action" value="attack" {% if turn != 'attacker' %}disabled{% endif %}>Attack</button>
-                <button type="submit" class="btn btn-success" name="action" value="defend" {% if turn != 'defender' %}disabled{% endif %}>Defend</button>
+                <div class="mb-3">
+                    <label for="attackDistrict" class="form-label">Choose district to attack:</label>
+                    <select class="form-select" id="attackDistrict" name="attackDistrict">
+                        {% for district, properties in city.items() %}
+                            <option value="{{ district }}">{{ district }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Choose attack method:</label><br>
+                    {% for action in ['Phishing', 'Virus', 'Malware', 'Skip Turn'] %}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="attackMethod" id="{{ action }}" value="{{ action }}">
+                            <label class="form-check-label" for="{{ action }}">{{ action }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-danger" name="action" value="attack" {% if turn != 'attacker' or budget['attacker'] < 1000 %}disabled{% endif %}>Attack</button>
+                <div class="mb-3">
+                    <label for="defendDistrict" class="form-label">Choose district to defend:</label>
+                    <select class="form-select" id="defendDistrict" name="defendDistrict">
+                        {% for district, properties in city.items() %}
+                            <option value="{{ district }}">{{ district }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Choose defense method:</label><br>
+                    {% for action in ['Firewall', 'Virus Protection', 'Intrusion Detection System', 'User Training', 'Turn Off Lights'] %}
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="defenseMethod" id="{{ action }}" value="{{ action }}">
+                            <label class="form-check-label" for="{{ action }}">{{ action }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-success" name="action" value="defend" {% if turn != 'defender' or budget['defender'] < 1000 %}disabled{% endif %}>Defend</button>
             </form>
         </div>
     </div>
@@ -84,8 +118,8 @@
         <div>{{ district }}: Light is {{ properties['light'] }}
             <form action="/manage_district" method="post" style="display:inline;">
                 <input type="hidden" name="district" value="{{ district }}">
-                <button type="submit" class="btn btn-sm btn-warning" name="action" value="turnOn">Turn On</button>
-                <button type="submit" class="btn btn-sm btn-secondary" name="action" value="turnOff">Turn Off</button>
+                <button type="submit" class="btn btn-sm btn-warning" name="action" value="turnOn" {% if properties['light'] == 'On' %}disabled{% endif %}>Turn On</button>
+                <button type="submit" class="btn btn-sm btn-secondary" name="action" value="turnOff" {% if properties['light'] == 'Off' %}disabled{% endif %}>Turn Off</button>
             </form>
         </div>
     {% endfor %}
