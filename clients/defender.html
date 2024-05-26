@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber City Battle</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #c0c0c0;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .container {
+            background-image: linear-gradient(to bottom right, #242424, #484848);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        h1, h2 {
+            color: #00ffea;
+        }
+        .btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 1em;
+        }
+        .btn-danger {
+            background-color: #ff073a;
+        }
+        .btn-success {
+            background-color: #4caf50;
+        }
+        .btn-warning {
+            background-color: #ff9800;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .alert-primary {
+            background-color: #007bff;
+            border-color: #0056b3;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 10px;
+        }
+        /* Custom scroll bars */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <h1>Cyber City Battle</h1>
+
+    <div class="alert alert-primary" role="alert">
+        Current Turn: <span id="currentTurn">Loading...</span>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Budget</h2>
+            <p>Defender: $<span id="defenderBudget">Loading...</span></p>
+            <p>Attacker: $<span id="attackerBudget">Loading...</span></p>
+        </div>
+        <div class="col-md-6">
+            <h2>Battle Actions</h2>
+            <form id="battleActionsForm">
+                <button type="button" class="btn btn-danger" onclick="performAction('attack')" id="attackButton">Attack</button>
+                <button type="button" class="btn btn-success" onclick="performAction('defend')" id="defendButton">Defend</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Districts</h2>
+    <div id="districts">
+        <!-- Districts will be dynamically loaded here -->
+    </div>
+
+    <h2>Defender Actions</h2>
+    <button class="btn btn-warning" onclick="selectAction('Firewall')">Firewall</button>
+    <button class="btn btn-warning" onclick="selectAction('Virus Protection')">Virus Protection</button>
+    <button class="btn btn-warning" onclick="selectAction('Intrusion Detection System')">Intrusion Detection System</button>
+    <button class="btn btn-warning" onclick="selectAction('User Training')">User Training</button>
+    <p></p>
+    <h2>Locations</h2>
+    <button class="btn btn-secondary" onclick="selectLocation('Business')">Business</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Hospital')">Hospital</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Fire/Police')">Fire/Police</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Industrial')">Industrial</button>
+    <button class="btn btn-secondary" onclick="selectLocation('University')">University</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Housing')">Housing</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Fort Sam')">Fort Sam</button>
+    <button class="btn btn-secondary" onclick="selectLocation('Traffic Lights')">Traffic Lights</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    let selectedAction = null;
+    let selectedLocation = null;
+
+    socket.on('connect', () => {
+        console.log('Connected to the server');
+        socket.emit('login', 'Defender'); // Assuming logging in as defender for demonstration
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected from the server');
+    });
+
+    socket.on('budget', (budget) => {
+        document.getElementById('defenderBudget').textContent = budget.defender;
+        document.getElementById('attackerBudget').textContent = budget.attacker;
+    });
+
+    socket.on('turn', (turn) => {
+        document.getElementById('currentTurn').textContent = turn.charAt(0).toUpperCase() + turn.slice(1);
+        document.getElementById('attackButton').disabled = turn !== 'attacker';
+        document.getElementById('defendButton').disabled = turn !== 'defender';
+    });
+
+    socket.on('city', (city) => {
+        const districtsContainer = document.getElementById('districts');
+        districtsContainer.innerHTML = '';
+        for (const district in city) {
+            const districtDiv = document.createElement('div');
+            districtDiv.innerHTML = `
+                ${district}: Light is ${city[district].light}
+                <form action="/manage_district" method="post" style="display:inline;">
+                    <input type="hidden" name="district" value="${district}">
+                    <button type="button" class="btn btn-sm btn-warning" onclick="manageDistrict('${district}', 'turnOn')">Turn On</button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="manageDistrict('${district}', 'turnOff')">Turn Off</button>
+                </form>
+            `;
+            districtsContainer.appendChild(districtDiv);
+        }
+    });
+
+    function performAction(action) {
+        socket.emit('battle_action', { action });
+        console.log(`${action} action performed`);
+    }
+
+    function selectAction(action) {
+        selectedAction = action;
+        console.log(`Selected action: ${action}`);
+        socket.emit('defenderAction', { side: 'Defender', action });
+    }
+
+    function selectLocation(location) {
+        selectedLocation = location;
+        console.log(`Selected location: ${location}`);
+        socket.emit('location', { side: 'Defender', location });
+    }
+
+    function manageDistrict(district, action) {
+        console.log(`${action} ${district}`);
+        socket.emit('manage_district', { district, action });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Side</title>
+</head>
+<body>
+<h1>Choose Your Side</h1>
+<a href="/hacker.html" onclick="logLogin('Hacker')">Hacker</a>
+<a href="/defender.html" onclick="logLogin('Defender')">Defender</a>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    function logLogin(side) {
+        socket.emit('login', side);
+        console.log(`${side} has logged in`);
+    }
+</script>
+</body>
+</html>
+
