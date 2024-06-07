@@ -11,56 +11,77 @@
             font-family: 'Orbitron', sans-serif;
         }
         .container {
-            background-image: linear-gradient(to bottom right, #242424, #484848);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
         }
         h1, h2 {
-            color: #00ffea;
+            color: #ff9800;
         }
         .btn {
             margin-top: 10px;
         }
+        .alert-danger {
+            background-color: #ff9800;
+            border-color: #e65100;
+        }
         .btn-danger {
-            background-color: #ff073a;
+            background-color: #ff5722;
         }
-        .alert-primary {
-            background-color: #007bff;
-            border-color: #0056b3;
+        .btn-secondary {
+            background-color: #6c757d;
         }
-        /* Hover effects for buttons */
         .btn:hover {
             opacity: 0.8;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('update', function(data) {
+            updateUI(data);
+        });
+
+        function updateUI(data) {
+            console.log(data);
+            document.querySelector('.alert-danger').innerText = "Attacker Budget: " + data.budget.attacker;
+            const messagesList = document.querySelector('.alert-secondary ul');
+            messagesList.innerHTML = '';
+            data.messages.forEach(message => {
+                const li = document.createElement('li');
+                li.textContent = message;
+                messagesList.appendChild(li);
+            });
+        }
+
+        function performAttack() {
+            var location = document.getElementById('attack-select').value;
+            var action = document.getElementById('action-select').value;
+            socket.emit('battle_action', {location: location, action: action});
+        }
+    </script>
 </head>
 <body>
 <div class="container">
     <h1>Cyber City Attacker</h1>
-    <div class="alert alert-primary" role="alert">
+    <div class="alert alert-danger" role="alert">
         Attacker Budget: {{ budget.attacker }}
     </div>
     <div class="row">
         <div class="col-md-12">
             <h2>Battle Actions</h2>
-            <form action="/battle_action" method="post">
-                <label for="attack-select">Select District to Attack:</label>
-                <select class="form-select" id="attack-select" name="attack_district">
-                    {% for district in city %}
-                        <option value="{{ district }}">{{ district }}</option>
-                    {% endfor %}
-                </select>
-                <label for="attack-action-select">Select Attack Action:</label>
-                <select class="form-select" id="attack-action-select" name="attack_action">
-                    {% for action, details in hacking_actions.items() %}
-                        <option value="{{ action }}">{{ action }}</option>
-                    {% endfor %}
-                </select>
-                <input type="hidden" name="cost" value="0" id="attack-cost">
-                <button type="submit" class="btn btn-danger">Attack</button>
-            </form>
+            <select id="attack-select" class="form-select">
+                {% for district in city.keys() %}
+                    <option value="{{ district }}">{{ district }}</option>
+                {% endfor %}
+            </select>
+            <select id="action-select" class="form-select">
+                {% for action in hacking_actions.keys() %}
+                    <option value="{{ action }}">{{ hacking_actions[action]['name'] }}</option>
+                {% endfor %}
+            </select>
+            <button onclick="performAttack()" class="btn btn-danger">Execute</button>
         </div>
     </div>
     <div class="alert alert-secondary mt-4" role="alert">
@@ -76,18 +97,5 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const hackingActions = JSON.parse('{{ hacking_actions | tojson | safe }}');
-        const attackerBudget = {{ budget.attacker }};
-
-        // Update cost value for battle actions
-        document.getElementById('attack-action-select').addEventListener('change', function() {
-            const costInput = document.getElementById('attack-cost');
-            const action = this.value;
-            costInput.value = Math.floor(attackerBudget * hackingActions[action].probability);
-        });
-    });
-</script>
 </body>
 </html>
