@@ -78,6 +78,12 @@
             border-radius: .25rem;
         }
 
+
+        .alert-secondary li:last-child {
+            color: teal;
+        }
+
+
         /* Custom scroll bars */
         ::-webkit-scrollbar {
             width: 10px;
@@ -165,20 +171,49 @@
         console.log('Disconnected from server');
     });
 
+    // socket.on('game_message', (message) => {
+    //     const gameMessages = document.getElementById('gameMessages');
+    //     const messageElement = document.createElement('li');
+    //     messageElement.textContent = message;
+    //     gameMessages.appendChild(messageElement);
+    // });
+    //
+    // socket.on('hacker_game_message', (message) => {
+    //     console.log(message);
+    //     const gameMessages = document.getElementById('gameMessages');
+    //     const messageElement = document.createElement('li');
+    //     messageElement.textContent = `${message}`;
+    //     gameMessages.appendChild(messageElement);
+    // });
+
     socket.on('game_message', (message) => {
         const gameMessages = document.getElementById('gameMessages');
         const messageElement = document.createElement('li');
         messageElement.textContent = message;
+
+        // Remove orange color from previous most recent message
+        const previousMessage = gameMessages.querySelector('li:last-child');
+        if (previousMessage) {
+            previousMessage.style.color = ''; // Reset color to default
+        }
+
         gameMessages.appendChild(messageElement);
     });
 
     socket.on('hacker_game_message', (message) => {
-        console.log(message);
         const gameMessages = document.getElementById('gameMessages');
         const messageElement = document.createElement('li');
         messageElement.textContent = `${message}`;
+
+        // Remove orange color from previous most recent message
+        const previousMessage = gameMessages.querySelector('li:last-child');
+        if (previousMessage) {
+            previousMessage.style.color = ''; // Reset color to default
+        }
+
         gameMessages.appendChild(messageElement);
     });
+
 
     socket.on('turn', (turn) => {
         document.getElementById('currentTurn').textContent = turn;
