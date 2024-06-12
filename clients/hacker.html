@@ -116,8 +116,12 @@
         </div>
     </div>
 
+<!--    <h2>Ready Up</h2>-->
+<!--    <button type="button" class="btn btn-ready btn-success" onclick="readyUp()">Ready Up</button>-->
+
     <h2>Ready Up</h2>
-    <button type="button" class="btn btn-ready btn-success" onclick="readyUp()">Ready Up</button>
+    <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
+
 
     <h2>Districts</h2>
     <div id="districts">
@@ -184,9 +188,19 @@
         socket.emit('actions', { side: 'Hacker', action });
     }
 
+    // function readyUp() {
+    //     socket.emit('ready_up', { side: 'Hacker' });
+    // }
+
     function readyUp() {
+        const readyButton = document.getElementById('readyButton');
+        // Change background color to green when clicked
+        readyButton.classList.remove('btn-secondary');
+        readyButton.classList.add('btn-success');
+        readyButton.disabled = true; // Disable button to prevent multiple clicks
         socket.emit('ready_up', { side: 'Hacker' });
     }
+
 
     function selectAction(action) {
         socket.emit('actions', { side: 'Hacker', action });
