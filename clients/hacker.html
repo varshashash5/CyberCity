@@ -61,6 +61,23 @@
             max-width: 50%;
             padding: 10px;
         }
+
+        .mt-4 {
+            margin-top: 1.5rem !important;
+        }
+        .alert-secondary {
+            color: #41464b;
+            background-color: #e2e3e5;
+            border-color: #d3d6d8;
+        }
+        .alert {
+            position: relative;
+            padding: 1rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: .25rem;
+        }
+
         /* Custom scroll bars */
         ::-webkit-scrollbar {
             width: 10px;
@@ -99,6 +116,9 @@
         </div>
     </div>
 
+    <h2>Ready Up</h2>
+    <button type="button" class="btn btn-ready btn-success" onclick="readyUp()">Ready Up</button>
+
     <h2>Districts</h2>
     <div id="districts">
         <!-- Districts will be dynamically loaded here -->
@@ -118,6 +138,11 @@
     <button class="btn btn-secondary" onclick="selectLocation('Housing')">Housing</button>
     <button class="btn btn-secondary" onclick="selectLocation('Fort Sam')">Fort Sam</button>
     <button class="btn btn-secondary" onclick="selectLocation('Traffic Lights')">Traffic Lights</button>
+
+    <div class="alert alert-secondary mt-4" role="alert">
+        <h2>Game Messages</h2>
+        <ul id="gameMessages"></ul>
+    </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -126,64 +151,51 @@
     let selectedAction = null;
     let selectedLocation = null;
 
+    socket.emit('login', 'Hacker');
+
     socket.on('connect', () => {
-        console.log('Connected to the server');
-        socket.emit('login', 'Defender'); // Assuming logging in as defender for demonstration
+        console.log('Connected to server');
     });
 
     socket.on('disconnect', () => {
-        console.log('Disconnected from the server');
+        console.log('Disconnected from server');
     });
 
-    socket.on('budget', (budget) => {
-        document.getElementById('defenderBudget').textContent = budget.defender;
-        document.getElementById('attackerBudget').textContent = budget.attacker;
+    socket.on('game_message', (message) => {
+        const gameMessages = document.getElementById('gameMessages');
+        const messageElement = document.createElement('li');
+        messageElement.textContent = message;
+        gameMessages.appendChild(messageElement);
+    });
+
+    socket.on('hacker_game_message', (message) => {
+        console.log(message);
+        const gameMessages = document.getElementById('gameMessages');
+        const messageElement = document.createElement('li');
+        messageElement.textContent = `${message}`;
+        gameMessages.appendChild(messageElement);
     });
 
     socket.on('turn', (turn) => {
-        document.getElementById('currentTurn').textContent = turn.charAt(0).toUpperCase() + turn.slice(1);
-        document.getElementById('attackButton').disabled = turn !== 'attacker';
-        document.getElementById('defendButton').disabled = turn !== 'defender';
-    });
-
-    socket.on('city', (city) => {
-        const districtsContainer = document.getElementById('districts');
-        districtsContainer.innerHTML = '';
-        for (const district in city) {
-            const districtDiv = document.createElement('div');
-            districtDiv.innerHTML = `
-                ${district}: Light is ${city[district].light}
-                <form action="/manage_district" method="post" style="display:inline;">
-                    <input type="hidden" name="district" value="${district}">
-                    <button type="button" class="btn btn-sm btn-warning" onclick="manageDistrict('${district}', 'turnOn')">Turn On</button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="manageDistrict('${district}', 'turnOff')">Turn Off</button>
-                </form>
-            `;
-            districtsContainer.appendChild(districtDiv);
-        }
+        document.getElementById('currentTurn').textContent = turn;
     });
 
     function performAction(action) {
-        socket.emit('battle_action', { action });
-        console.log(`${action} action performed`);
+        socket.emit('actions', { side: 'Hacker', action });
+    }
+
+    function readyUp() {
+        socket.emit('ready_up', { side: 'Hacker' });
     }
 
     function selectAction(action) {
-        selectedAction = action;
-        console.log(`Selected action: ${action}`);
-        socket.emit('defenderAction', { side: 'Defender', action });
+        socket.emit('actions', { side: 'Hacker', action });
     }
 
     function selectLocation(location) {
-        selectedLocation = location;
-        console.log(`Selected location: ${location}`);
-        socket.emit('location', { side: 'Defender', location });
-    }
-
-    function manageDistrict(district, action) {
-        console.log(`${action} ${district}`);
-        socket.emit('manage_district', { district, action });
+        socket.emit('location', { side: 'Hacker', location });
     }
 </script>
 </body>
 </html>
+
