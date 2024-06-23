@@ -16,23 +16,10 @@
             box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
         }
         h1, h2 {
-            color: #ff9800;
+            color: #ff0044;
         }
         .btn {
             margin-top: 10px;
-        }
-        .alert-danger {
-            background-color: #ff9800;
-            border-color: #e65100;
-        }
-        .btn-danger {
-            background-color: #ff5722;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        .btn:hover {
-            opacity: 0.8;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -45,7 +32,7 @@
 
         function updateUI(data) {
             console.log(data);
-            document.querySelector('.alert-danger').innerText = "Attacker Budget: " + data.budget.attacker;
+            document.querySelector('.alert-primary').innerText = "Attacker Budget: " + data.budget.attacker;
             const messagesList = document.querySelector('.alert-secondary ul');
             messagesList.innerHTML = '';
             data.messages.forEach(message => {
@@ -55,33 +42,34 @@
             });
         }
 
-        function performAttack() {
-            var location = document.getElementById('attack-select').value;
-            var action = document.getElementById('action-select').value;
-            socket.emit('battle_action', {location: location, action: action});
+        function executeAttack() {
+            const district = document.getElementById('district').value;
+            const action = document.getElementById('action').value;
+            console.log(`Executing attack: action=${action}, district=${district}`);  // Debugging
+            socket.emit('battle_action', {action: action, location: district});
         }
     </script>
 </head>
 <body>
 <div class="container">
     <h1>Cyber City Attacker</h1>
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-primary" role="alert">
         Attacker Budget: {{ budget.attacker }}
     </div>
     <div class="row">
         <div class="col-md-12">
-            <h2>Battle Actions</h2>
-            <select id="attack-select" class="form-select">
-                {% for district in city.keys() %}
+            <h2>Attack a District</h2>
+            <select id="district" class="form-select">
+                {% for district in city %}
                     <option value="{{ district }}">{{ district }}</option>
                 {% endfor %}
             </select>
-            <select id="action-select" class="form-select">
-                {% for action in hacking_actions.keys() %}
-                    <option value="{{ action }}">{{ hacking_actions[action]['name'] }}</option>
+            <select id="action" class="form-select mt-2">
+                {% for action, details in hacking_actions.items() %}
+                    <option value="{{ action }}">{{ action }}</option>
                 {% endfor %}
             </select>
-            <button onclick="performAttack()" class="btn btn-danger">Execute</button>
+            <button onclick="executeAttack()" class="btn btn-sm btn-danger mt-2">Execute Attack</button>
         </div>
     </div>
     <div class="alert alert-secondary mt-4" role="alert">
