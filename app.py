@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import random
 from cybercity import Cybercity
 from flask_socketio import SocketIO, emit
 
@@ -62,6 +61,7 @@ def attacker():
 
 @socketio.on('manage_district')
 def handle_manage_district(data):
+    print(f"Handling manage_district: {data}")  # Debugging
     if session['turn'] != 'defender':
         return
 
@@ -72,18 +72,20 @@ def handle_manage_district(data):
     elif action == 'turnOff':
         cybercity.turnOffLight(district)
     
+    session['budget']['defender'] -= 1000  # Deduct budget for defender actions
     session['turn'] = 'attacker'
     session['messages'].append(f"Defender turned {action} the lights in {district}.")
     emit('update', {'city': cybercity.districts, 'messages': session['messages'], 'turn': session['turn'], 'budget': session['budget']}, broadcast=True)
 
 @socketio.on('battle_action')
 def handle_battle_action(data):
+    print(f"Handling battle_action: {data}")  # Debugging
     if session['turn'] != 'attacker':
         return
 
     action = data['action']
     location_to_attack = data['location']
-    session['budget']['attacker'] -= 1000
+    session['budget']['attacker'] -= 1000  # Deduct budget for attacker actions
 
     if action != "Skip Turn":
         if cybercity.hackSuccessful(hacking_actions[action]['probability']):
