@@ -1,3 +1,5 @@
+# Copyright SAMSAT
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from cybercity import Cybercity
 from flask_socketio import SocketIO, emit
