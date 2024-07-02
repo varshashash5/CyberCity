@@ -2,46 +2,20 @@
 
 import random
 
+district_names = (
+    'Business', 'Hospital', 'Fire/Police', 'Industrial', 'University',
+    'Housing', 'Fort Sam', 'Traffic Lights'
+)
+
 class Cybercity:
     def __init__(self):
-        self.districts = {
-            "Business": {"light": "On"},
-            "Hospital": {"light": "On"},
-            "Fire/Police": {"light": "On"},
-            "Industrial": {"light": "On"},
-            "University": {"light": "On"},
-            "Housing": {"light": "On"},
-            "Fort Sam": {"light": "On"},
-            "Traffic Lights": {"light": "On"}
-        }
-
+        self.lights = { name: True for name in district_names }
         self.budget = {
-            "defender": 50000,
-            "attacker": 50000
+            'defender': 50000,
+            'attacker': 50000,
         }
+        self.turn = 'defender'
+        self.messages = [f"Game started. {self.turn.capitalize()}'s turn."]
 
-    def turnOnLight(self, district):
-        if self.budget['defender'] >= 1000:  # Check if defender has enough budget
-            self.districts[district]['light'] = "On"
-            self.budget['defender'] -= 1000  # Deduct budget
-
-    def turnOffLight(self, district):
-        self.districts[district]['light'] = "Off"
-
-    def getStatus(self, district):
-        return self.districts[district]['light']
-
-    def on(self):
-        for district in self.districts:
-            self.turnOnLight(district)
-
-    def off(self):
-        for district in self.districts:
-            self.turnOffLight(district)
-
-    def refresh(self):
-        for district, status in self.districts.items():
-            print(f"{district} lights are {status['light']}")
-
-    def hackSuccessful(self, probability):
+    def hackSuccessful(self, probability: float) -> bool:
         return random.random() < probability
