@@ -1,0 +1,32 @@
+body {
+    background-color: #121212;
+    color: #c0c0c0;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.container {
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
+}
+
+.btn {
+    margin-top: 10px;
+}
+
+.city {
+    display: flex;
+    flex-direction: row;
+
+    div {
+        margin: 1em;
+    }
+}
+
+.districtOn {
+    color: white;
+}
+
+.districtOff {
+    color: gray;
+}
