@@ -1,3 +1,5 @@
+// Copyright SAMSAT
+
 import { html, render } from 'https://unpkg.com/htm/preact/standalone.module.js';
 
 const budget = document.querySelector('#budget');
