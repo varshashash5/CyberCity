@@ -1,6 +1,4 @@
-/*
-Copyright SAMSAT
-*/
+/* Copyright SAMSAT */
 
 body {
     background-color: #121212;
@@ -16,6 +14,10 @@ body {
 
 .btn {
     margin-top: 10px;
+}
+
+.alerts {
+    column-count: 2;
 }
 
 .city {
