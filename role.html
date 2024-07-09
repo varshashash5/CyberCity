@@ -22,7 +22,10 @@
             'budget': {{budget|tojson}},
             'city': {{city|tojson}},
             'turn': {{turn|tojson}},
+            'round': {{round|tojson}},
+            'rounds': {{rounds|tojson}},
             'messages': {{messages|tojson}},
+            'usedLocations': {{usedLocations|tojson}},
         };
         var actions = {{actions|tojson}};
         {% block script %}
@@ -34,24 +37,22 @@
 <body>
     <div class="container">
         <h1>{% block heading %}{% endblock %}</h1>
-        <div id="budget" class="alert alert-primary" role="alert">
+        <div class="alerts">
+            <div id="round" class="alert alert-primary"></div>
+            <div id="budget" class="alert alert-primary" role="alert"></div>
         </div>
         <h2>District Lights</h2>
-        <div class="city">
-        </div>
+        <div class="city"></div>
         <div class="row">
             <div class="col-md-12">
                 <h2>{% block actionheading %}{% endblock %}</h2>
                 <label for="district">District:</label>
                 <select id="district" class="form-select">
-                    {% for district in city %}
-                    <option value="{{ district }}">{{ district }}</option>
-                    {% endfor %}
                 </select>
                 <label for="action">Action:</label>
-                <select id="action" class="form-select">
-                </select>
+                <select id="action" class="form-select"></select>
                 <button id="execute" class="btn btn-sm btn-danger mt-2" disabled>Loading...</button>
+                <button id="endturn" class="btn btn-sm btn-danger mt-2" disabled>End turn</button>
             </div>
         </div>
         <div class="alert alert-secondary mt-4" role="alert">
