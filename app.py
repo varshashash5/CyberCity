@@ -50,6 +50,8 @@ def defender():
         return redirect(url_for('index'))
     return render_template('defender.html', city=cybercity.lights, turn=cybercity.turn,
                            budget=cybercity.budget, messages=cybercity.messages,
+                           round=cybercity.round, rounds=cybercity.rounds,
+                           usedLocations=cybercity.used_locations,
                            actions={ k: v.cost for k, v in defender_actions.items() })
 
 @app.route('/attacker')
@@ -58,65 +60,81 @@ def attacker():
         return redirect(url_for('index'))
     return render_template('attacker.html', city=cybercity.lights, turn=cybercity.turn,
                            budget=cybercity.budget, messages=cybercity.messages,
+                           round=cybercity.round, rounds=cybercity.rounds,
+                           usedLocations=cybercity.used_locations,
                            actions={ k: v.cost for k, v in attacker_actions.items() })
 
 def emit_update():
+    if len(cybercity.used_locations) == len(cybercity.lights):
+        cybercity.end_turn()
+    
     emit('update', {
         'city': cybercity.lights,
         'messages': cybercity.messages,
         'turn': cybercity.turn,
+        'round': cybercity.round,
+        'rounds': cybercity.rounds,
         'budget': cybercity.budget,
+        'usedLocations': cybercity.used_locations,
     }, broadcast=True)
 
 @socketio.on('manage_district')
 def handle_manage_district(data):
     print(f"Handling manage_district: {data}")  # Debugging
-    if cybercity.turn != 'defender' or cybercity.budget['defender'] < min_defender_cost:
-        return
-
     district = data['location']
     action = data['action']
-    if cybercity.budget['attacker'] >= min_attacker_cost:
-        cybercity.turn = 'attacker'
-    cybercity.budget['defender'] -= defender_actions[action].cost
+
+    if (cybercity.turn != 'defender'
+        or cybercity.budget['defender'] < defender_actions[action].cost):
+        return
     
     if action == 'Turn Off Lights':
         cybercity.lights[district] = False
-        cybercity.messages.append(f"Defender turned off the lights in {district}.")
+        cybercity.messageEach(
+            defender=f"Defender turned off the lights in {district}.",
+            attacker=f'Lights turned off in {district}.')
     else:
-        if cybercity.hackSuccessful(defender_actions[action].probability):
+        if cybercity.hack_successful(defender_actions[action].probability):
             cybercity.lights[district] = True
-            cybercity.messages.append(f"Defender successfully used {action} on {district}. Lights turned on.")
+            cybercity.messageEach(
+                defender=f"Defender successfully used {action} on {district}. Lights turned on.",
+                attacker=f'Lights turned on in {district}.')
         else:
-            cybercity.messages.append(f"Defender's {action} on {district} failed.")
+            cybercity.messageEach(
+                defender=f"Defender's {action} on {district} failed.")
 
-    if cybercity.budget['defender'] < min_defender_cost:
-        cybercity.messages.append(f"Defender's budget exhausted.")
-    
+    cybercity.used_locations.append(district)
+    cybercity.budget['defender'] -= defender_actions[action].cost
     emit_update()
 
 @socketio.on('battle_action')
 def handle_battle_action(data):
     print(f"Handling battle_action: {data}")  # Debugging
-    if cybercity.turn != 'attacker' or cybercity.budget['attacker'] < 1000:
-        return
-
     action = data['action']
     district = data['location']
-    if cybercity.budget['defender'] >= min_defender_cost:
-        cybercity.turn = 'defender'
-    cybercity.budget['attacker'] -= attacker_actions[action].cost
+
+    if (cybercity.turn != 'attacker'
+        or cybercity.budget['attacker'] < attacker_actions[action].cost):
+        return
 
     if action != "Skip Turn":
-        if cybercity.hackSuccessful(attacker_actions[action].probability):
+        if cybercity.hack_successful(attacker_actions[action].probability):
             cybercity.lights[district] = False
-            cybercity.messages.append(f"Attacker successfully used {action} on {district}. Lights turned off.")
+            cybercity.messageEach(
+                defender=f'Lights turned off in {district}.',
+                attacker=f"Attacker successfully used {action} on {district}. Lights turned off.")
         else:
-            cybercity.messages.append(f"Attacker's {action} on {district} failed.")
+            cybercity.messageEach(
+                attacker=f"Attacker's {action} on {district} failed.")
 
-    if cybercity.budget['attacker'] < min_attacker_cost:
-        cybercity.messages.append(f"Attacker's budget exhausted.")
+    cybercity.used_locations.append(district)
+    cybercity.budget['attacker'] -= attacker_actions[action].cost
+    emit_update()
 
+@socketio.on('end_turn')
+def handle_end_turn(data):
+    print(f"Handling end_turn: {data}")  # Debugging
+    cybercity.end_turn()
     emit_update()
 
 if __name__ == '__main__':
