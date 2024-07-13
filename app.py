@@ -138,4 +138,4 @@ def handle_end_turn(data):
     emit_update()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, host='192.168.1.169', port=5001, debug=True)
