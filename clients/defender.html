@@ -31,7 +31,7 @@
             font-size: 1em;
         }
         .btn-danger {
-            background-color: #ff073a;
+            background-color: green;
         }
         .btn-success {
             background-color: #4caf50;
@@ -59,9 +59,9 @@
             flex-wrap: wrap;
             margin-bottom: 2rem;
         }
-        .col-md-6 {
-            flex: 0 0 50%;
-            max-width: 50%;
+        .col-md-12 {
+            flex: 0 0 96%;
+            max-width: 100%;
             padding: 1rem;
         }
 
@@ -115,9 +115,22 @@
         .lightbulb span.on {
             background-color: yellow;
         }
+
+        /* Flex layout for the button row */
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         #gameMessages {
             max-height: 12vh;
             overflow-y: auto;
+        }
+
+        /* CSS class for hidden elements */
+        .hidden {
+            display: none;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -137,30 +150,23 @@
     </div>
 
     <div class="row">
-<!--        <div class="col-md-6">-->
-<!--            <h2>Budget</h2>-->
-<!--            <p>Defender: $<span id="defenderBudget">Loading...</span></p>-->
-<!--            <p>Attacker: $<span id="attackerBudget">Loading...</span></p>-->
-<!--        </div>-->
-        <div class="col-md-6">
-            <h2>Battle Actions</h2>
-            <form id="battleActionsForm">
-                <button type="button" class="btn btn-success" id="defendButton" onclick="confirmAction()">Defend</button>
-            </form>
+        <div class="col-md-12 button-row">
+            <div>
+                <h2>Battle Actions</h2>
+                <form id="battleActionsForm">
+                    <button type="button" class="btn btn-danger" onclick="confirmAction()" id="attackButton">Defend</button>
+                </form>
+            </div>
+            <div id="readyButtonDiv" >
+                <h2>Ready Up</h2>
+                <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
+            </div>
         </div>
     </div>
-
-<!--    <h2>Ready Up</h2>-->
-<!--    <button type="button" class="btn btn-ready btn-success" onclick="readyUp()">Ready Up</button>-->
-    <div id="readyButtonDiv">
-        <h2>Ready Up</h2>
-        <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
-    </div>
-
-<!--    <h2>Districts</h2>-->
-<!--    <div id="districts">-->
-<!--        &lt;!&ndash; Districts will be dynamically loaded here &ndash;&gt;-->
-<!--    </div>-->
+    <!--    <h2>Districts</h2>-->
+    <!--    <div id="districts">-->
+    <!--        &lt;!&ndash; Districts will be dynamically loaded here &ndash;&gt;-->
+    <!--    </div>-->
 
     <h2>Defender Actions</h2>
     <button class="btn btn-warning" onclick="selectAction('Firewall')">Firewall</button>
@@ -190,25 +196,140 @@
     let selectedAction = null;
     let selectedLocation = null;
 
-
     socket.emit('login', 'Defender');
-
 
     socket.on('connect', () => {
         console.log('Connected to server');
     });
 
-
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
     });
 
+    // socket.on('game_message', (message) => {
+    //     const gameMessages = document.getElementById('gameMessages');
+    //     const messageElement = document.createElement('li');
+    //     messageElement.textContent = message;
+    //
+    //     const previousMessage = gameMessages.querySelector('li:last-child');
+    //     if (previousMessage) {
+    //         previousMessage.style.color = ''; // Reset color to default
+    //     }
+    //
+    //     gameMessages.appendChild(messageElement);
+    //     scrollToBottom(gameMessages);
+    //
+    //     // Hide the ready button if both players are ready
+    //     if (message.includes('Both players are ready')) {
+    //         document.getElementById('readyButtonDiv').classList.add('hidden');
+    //     }
+    // });
+    //
+    // socket.on('defender_game_message', (message) => {
+    //     const gameMessages = document.getElementById('gameMessages');
+    //     const messageElement = document.createElement('li');
+    //     messageElement.textContent = `${message}`;
+    //
+    //     const previousMessage = gameMessages.querySelector('li:last-child');
+    //     if (previousMessage) {
+    //         previousMessage.style.color = ''; // Reset color to default
+    //     }
+    //
+    //     gameMessages.appendChild(messageElement);
+    //     scrollToBottom(gameMessages);
+    // });
+    //
+    // socket.on('turn', (turn) => {
+    //     document.getElementById('currentTurn').textContent = turn;
+    //     updateLightbulb(turn);
+    // });
+    //
+    // socket.on('hide_ready_buttons', () => {
+    //     document.getElementById('readyButtonDiv').classList.add('hidden');
+    // });
+    //
+    // function scrollToBottom(element) {
+    //     element.scrollTop = element.scrollHeight;
+    // }
+    //
+    // function updateLightbulb(turn) {
+    //     const lightbulb = document.getElementById('lightbulb');
+    //     const turnMessage = document.getElementById('turnMessage');
+    //     if (turn === 'Defender') {
+    //         lightbulb.classList.add('on');
+    //         turnMessage.textContent = "It's your turn!";
+    //     } else {
+    //         lightbulb.classList.remove('on');
+    //         turnMessage.textContent = "Not your turn!";
+    //     }
+    // }
+    //
+    // function readyUp() {
+    //     const readyButton = document.getElementById('readyButton');
+    //     readyButton.classList.remove('btn-secondary');
+    //     readyButton.classList.add('btn-success');
+    //     readyButton.disabled = true; // Disable button to prevent multiple clicks
+    //     socket.emit('ready_up', { side: 'Defender' });
+    // }
+    //
+    // function selectAction(action) {
+    //     selectedAction = action;
+    //     socket.emit('actions', { side: 'Defender', action });
+    //     checkAndEmitTurnCompletion('Defender');
+    // }
+    //
+    // function selectLocation(location) {
+    //     selectedLocation = location;
+    //     socket.emit('location', { side: 'Defender', location });
+    //     checkAndEmitTurnCompletion('Defender');
+    // }
+    //
+    // function confirmAction() {
+    //     if (selectedAction && selectedLocation) {
+    //         socket.emit('confirm_action');
+    //     }
+    // }
+    //
+    // function checkAndEmitTurnCompletion(side) {
+    //     if (selectedAction && selectedLocation) {
+    //         socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
+    //     }
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+    socket.on('game_message', (message) => {
+        const gameMessages = document.getElementById('gameMessages');
+        const messageElement = document.createElement('li');
+        messageElement.textContent = message;
+
+        const previousMessage = gameMessages.querySelector('li:last-child');
+        if (previousMessage) {
+            previousMessage.style.color = ''; // Reset color to default
+        }
+
+        gameMessages.appendChild(messageElement);
+        scrollToBottom(gameMessages);
+
+        // Hide the ready button if both players are ready
+        if (message.includes('Both players are ready')) {
+            document.getElementById('readyButtonDiv').classList.add('hidden');
+        }
+    });
 
     socket.on('defender_game_message', (message) => {
         const gameMessages = document.getElementById('gameMessages');
         const messageElement = document.createElement('li');
         messageElement.textContent = `${message}`;
-
 
         const previousMessage = gameMessages.querySelector('li:last-child');
         if (previousMessage) {
@@ -219,13 +340,24 @@
         scrollToBottom(gameMessages);
     });
 
+    socket.on('turn', (turn) => {
+        updateTurnUI(turn);
+    });
+
+    socket.on('hide_ready_buttons', () => {
+        document.getElementById('readyButtonDiv').classList.add('hidden');
+    });
+
+    socket.on('start_game', (turn) => {
+        updateTurnUI(turn);
+    });
 
     function scrollToBottom(element) {
         element.scrollTop = element.scrollHeight;
     }
 
-
-    function updateLightbulb(turn) {
+    function updateTurnUI(turn) {
+        document.getElementById('currentTurn').textContent = turn;
         const lightbulb = document.getElementById('lightbulb');
         const turnMessage = document.getElementById('turnMessage');
         if (turn === 'Defender') {
@@ -237,27 +369,6 @@
         }
     }
 
-
-    socket.on('turn', (turn) => {
-        document.getElementById('currentTurn').textContent = turn;
-        updateLightbulb(turn);
-    });
-
-
-    socket.on('game_message', (message) => {
-        const gameMessages = document.getElementById('gameMessages');
-        const messageElement = document.createElement('li');
-        messageElement.textContent = message;
-        gameMessages.appendChild(messageElement);
-        scrollToBottom(gameMessages);
-
-        // Hide the ready button if both players are ready
-        if (message.includes('Both players are ready')) {
-            document.getElementById('readyButtonDiv').style.display = 'none';
-        }
-    });
-
-
     function readyUp() {
         const readyButton = document.getElementById('readyButton');
         readyButton.classList.remove('btn-secondary');
@@ -266,13 +377,11 @@
         socket.emit('ready_up', { side: 'Defender' });
     }
 
-
     function selectAction(action) {
         selectedAction = action;
         socket.emit('actions', { side: 'Defender', action });
         checkAndEmitTurnCompletion('Defender');
     }
-
 
     function selectLocation(location) {
         selectedLocation = location;
@@ -280,22 +389,17 @@
         checkAndEmitTurnCompletion('Defender');
     }
 
-
     function confirmAction() {
         if (selectedAction && selectedLocation) {
             socket.emit('confirm_action');
         }
     }
 
-
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
         }
     }
-
-
-
 </script>
 </body>
 </html>

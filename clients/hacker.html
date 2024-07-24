@@ -59,12 +59,11 @@
             flex-wrap: wrap;
             margin-bottom: 2rem;
         }
-        .col-md-6 {
-            flex: 0 0 50%;
-            max-width: 50%;
+        .col-md-12 {
+            flex: 0 0 96%;
+            max-width: 100%;
             padding: 1rem;
         }
-
         .mt-4 {
             margin-top: 1.5rem !important;
         }
@@ -80,11 +79,9 @@
             border: 1px solid transparent;
             border-radius: .25rem;
         }
-
         .alert-secondary li:last-child {
             color: teal;
         }
-
         /* Custom scroll bars */
         ::-webkit-scrollbar {
             width: 1rem;
@@ -98,7 +95,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-
         /* Lightbulb styles */
         .lightbulb {
             display: flex;
@@ -115,10 +111,24 @@
         .lightbulb span.on {
             background-color: yellow;
         }
-
         #gameMessages {
             max-height: 12vh;
             overflow-y: auto;
+        }
+        /* CSS class for hidden elements */
+        .hidden {
+            display: none;
+        }
+        /* Flex layout for the button row */
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #readyButtonDiv {
+            /*display: flex;*/
+            align-items: flex-end;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
@@ -126,7 +136,6 @@
 <body>
 <div class="container">
     <h1>Cyber City Battle</h1>
-
     <div class="alert alert-primary" role="alert">
         <div>
             Current Turn: <span id="currentTurn">Loading...</span>
@@ -136,30 +145,20 @@
             <p id="turnMessage">Loading...</p>
         </div>
     </div>
-
     <div class="row">
-        <div class="col-md-6">
-<!--            <h2>Budget</h2>-->
-<!--            <p>Defender: $<span id="defenderBudget">Loading...</span></p>-->
-<!--            <p>Attacker: $<span id="attackerBudget">Loading...</span></p>-->
-        </div>
-        <div class="col-md-6">
-            <h2>Battle Actions</h2>
-            <form id="battleActionsForm">
-                <button type="button" class="btn btn-danger" onclick="confirmAction()" id="attackButton">Attack</button>
-            </form>
+        <div class="col-md-12 button-row">
+            <div>
+                <h2>Battle Actions</h2>
+                <form id="battleActionsForm">
+                    <button type="button" class="btn btn-danger" onclick="confirmAction()" id="attackButton">Hack</button>
+                </form>
+            </div>
+            <div id="readyButtonDiv" >
+                <h2>Ready Up</h2>
+                <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
+            </div>
         </div>
     </div>
-
-    <div id="readyButtonDiv">
-        <h2>Ready Up</h2>
-        <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
-    </div>
-<!--    <h2>Districts</h2>-->
-<!--    <div id="districts">-->
-<!--        &lt;!&ndash; Districts will be dynamically loaded here &ndash;&gt;-->
-<!--    </div>-->
-
     <h2>Hacker Actions</h2>
     <button class="btn btn-warning" onclick="selectAction('Phishing')">Phishing</button>
     <button class="btn btn-warning" onclick="selectAction('Virus')">Virus</button>
@@ -174,68 +173,62 @@
     <button class="btn btn-secondary" onclick="selectLocation('Housing')">Housing</button>
     <button class="btn btn-secondary" onclick="selectLocation('Fort Sam')">Fort Sam</button>
     <button class="btn btn-secondary" onclick="selectLocation('Traffic Lights')">Traffic Lights</button>
-
     <div class="alert alert-secondary mt-4" role="alert">
         <h2>Game Messages</h2>
         <ul id="gameMessages"></ul>
     </div>
 </div>
-
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
     let selectedAction = null;
     let selectedLocation = null;
-
-
     socket.emit('login', 'Hacker');
-
-
     socket.on('connect', () => {
         console.log('Connected to server');
     });
-
-
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
     });
-
-
     socket.on('game_message', (message) => {
         const gameMessages = document.getElementById('gameMessages');
         const messageElement = document.createElement('li');
         messageElement.textContent = message;
-
         const previousMessage = gameMessages.querySelector('li:last-child');
         if (previousMessage) {
             previousMessage.style.color = ''; // Reset color to default
         }
-
         gameMessages.appendChild(messageElement);
         scrollToBottom(gameMessages);
+        // Hide the ready button if both players are ready
+        if (message.includes('Both players are ready')) {
+            document.getElementById('readyButtonDiv').classList.add('hidden');
+        }
     });
-
-
     socket.on('hacker_game_message', (message) => {
         const gameMessages = document.getElementById('gameMessages');
         const messageElement = document.createElement('li');
         messageElement.textContent = `${message}`;
-
         const previousMessage = gameMessages.querySelector('li:last-child');
         if (previousMessage) {
             previousMessage.style.color = ''; // Reset color to default
         }
-
         gameMessages.appendChild(messageElement);
         scrollToBottom(gameMessages);
     });
-
-
+    socket.on('turn', (turn) => {
+        document.getElementById('currentTurn').textContent = turn;
+        updateLightbulb(turn);
+    });
+    socket.on('hide_ready_buttons', () => {
+        document.getElementById('readyButtonDiv').classList.add('hidden');
+    });
+    socket.on('start_game', (turn) => {
+        updateTurnUI(turn);
+    });
     function scrollToBottom(element) {
         element.scrollTop = element.scrollHeight;
     }
-
-
     function updateLightbulb(turn) {
         const lightbulb = document.getElementById('lightbulb');
         const turnMessage = document.getElementById('turnMessage');
@@ -247,28 +240,6 @@
             turnMessage.textContent = "Not your turn!";
         }
     }
-
-
-    socket.on('turn', (turn) => {
-        document.getElementById('currentTurn').textContent = turn;
-        updateLightbulb(turn);
-    });
-
-
-    socket.on('game_message', (message) => {
-        const gameMessages = document.getElementById('gameMessages');
-        const messageElement = document.createElement('li');
-        messageElement.textContent = message;
-        gameMessages.appendChild(messageElement);
-        scrollToBottom(gameMessages);
-
-        // Hide the ready button if both players are ready
-        if (message.includes('Both players are ready')) {
-            document.getElementById('readyButtonDiv').style.display = 'none';
-        }
-    });
-
-
     function readyUp() {
         const readyButton = document.getElementById('readyButton');
         readyButton.classList.remove('btn-secondary');
@@ -276,37 +247,40 @@
         readyButton.disabled = true; // Disable button to prevent multiple clicks
         socket.emit('ready_up', { side: 'Hacker' });
     }
-
-
+    function updateTurnUI(turn) {
+        const currentTurn = document.getElementById('currentTurn');
+        const turnMessage = document.getElementById('turnMessage');
+        const lightbulb = document.getElementById('lightbulb');
+        if (turn === 'Hacker') {
+            currentTurn.textContent = 'Hacker';
+            turnMessage.textContent = "It's your turn!";
+            lightbulb.classList.add('on');
+        } else {
+            currentTurn.textContent = 'Defender';
+            turnMessage.textContent = 'Not your turn!';
+            lightbulb.classList.remove('on');
+        }
+    }
     function selectAction(action) {
         selectedAction = action;
         socket.emit('actions', { side: 'Hacker', action });
         checkAndEmitTurnCompletion('Hacker');
     }
-
-
     function selectLocation(location) {
         selectedLocation = location;
         socket.emit('location', { side: 'Hacker', location });
         checkAndEmitTurnCompletion('Hacker');
     }
-
-
     function confirmAction() {
         if (selectedAction && selectedLocation) {
             socket.emit('confirm_action');
         }
     }
-
-
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
         }
     }
-
-
-
 </script>
 </body>
 </html>

@@ -1,79 +1,141 @@
+# Copyright SAMSAT
+
 from flask import Flask, render_template, request, redirect, url_for, session
 from cybercity import Cybercity
-import random
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-app.secret_key = 'secret_key'
+app.secret_key = 'secret_key'  # session management
 cybercity = Cybercity()
+socketio = SocketIO(app)
 
-protection_actions = {
-    "Firewall": {"effect": 0.30, "probability": 0.7},
-    "Virus Protection": {"effect": 0.15, "probability": 0.8},
-    "Intrusion Detection System": {"effect": 0.25, "probability": 0.9},
-    "User Training": {"effect": 0.20, "probability": 1.0},
-    "Turn Off Lights": {"effect": 0, "probability": 1.0}
+base_cost = 10000
+
+class Action():
+    def __init__(self, effect: float, probability: float):
+        self.effect = effect
+        self.probability = probability
+        self.cost = int(base_cost * self.effect * self.probability)
+
+defender_actions = {
+    "Firewall": Action(0.3, 0.7),
+    "Virus Protection": Action(0.15, 0.8),
+    "Intrusion Detection System": Action(0.25, 0.9),
+    "User Training": Action(0.2, 1.0),
+    "Turn Off Lights": Action(0.0, 1.0),
 }
+min_defender_cost = min(x.cost for x in defender_actions.values())
 
-hacking_actions = {
-    "Phishing": {"effect": 0.35, "probability": 0.7},
-    "Virus": {"effect": 0.25, "probability": 0.8},
-    "Malware": {"effect": 0.20, "probability": 0.9},
-    "Skip Turn": {"effect": 0, "probability": 1.0}
+attacker_actions = {
+    "Phishing": Action(0.35, 0.7),
+    "Virus": Action(0.25, 0.8),
+    "Malware": Action(0.2, 0.9),
+    "Skip Turn": Action(0.0, 1.0),
 }
-
-@app.before_first_request
-def setup_game():
-    session['turn'] = 'defender'
-    session['messages'] = []
+min_attacker_cost = min(x.cost for x in attacker_actions.values())
 
 @app.route('/')
 def index():
-    messages = session.get('messages', [])
-    return render_template('index.html', city=cybercity.districts, turn=session['turn'], budget=cybercity.budget, messages=messages, protection_actions=protection_actions, hacking_actions=hacking_actions)
+    return render_template('index.html')
 
-@app.route('/manage_district', methods=['POST'])
-def manage_district():
-    if session['turn'] != 'defender':
+@app.route('/choose_role', methods=['POST'])
+def choose_role():
+    role = request.form['role']
+    session['role'] = role
+    return redirect(url_for(role))
+
+@app.route('/defender')
+def defender():
+    if session.get('role') != 'defender':
         return redirect(url_for('index'))
+    return render_template('defender.html', city=cybercity.lights, turn=cybercity.turn,
+                           budget=cybercity.budget, messages=cybercity.messages,
+                           round=cybercity.round, rounds=cybercity.rounds,
+                           usedLocations=cybercity.used_locations,
+                           actions={ k: v.cost for k, v in defender_actions.items() })
 
-    action = request.form['action']
-    district = request.form['district']
-    cost = int(float(request.form['cost']))
+@app.route('/attacker')
+def attacker():
+    if session.get('role') != 'attacker':
+        return redirect(url_for('index'))
+    return render_template('attacker.html', city=cybercity.lights, turn=cybercity.turn,
+                           budget=cybercity.budget, messages=cybercity.messages,
+                           round=cybercity.round, rounds=cybercity.rounds,
+                           usedLocations=cybercity.used_locations,
+                           actions={ k: v.cost for k, v in attacker_actions.items() })
 
-    cybercity.budget['defender'] -= cost
+def emit_update():
+    if len(cybercity.used_locations) == len(cybercity.lights):
+        cybercity.end_turn()
+
+    emit('update', {
+        'city': cybercity.lights,
+        'messages': cybercity.messages,
+        'turn': cybercity.turn,
+        'round': cybercity.round,
+        'rounds': cybercity.rounds,
+        'budget': cybercity.budget,
+        'usedLocations': cybercity.used_locations,
+    }, broadcast=True)
+
+@socketio.on('manage_district')
+def handle_manage_district(data):
+    print(f"Handling manage_district: {data}")  # Debugging
+    district = data['location']
+    action = data['action']
+
+    if (cybercity.turn != 'defender'
+            or cybercity.budget['defender'] < defender_actions[action].cost):
+        return
 
     if action == 'Turn Off Lights':
-        cybercity.turnOffLight(district)
-        session['messages'].append(f"Defender turned off lights in {district}.")
+        cybercity.lights[district] = False
+        cybercity.messageEach(
+            defender=f"Defender turned off the lights in {district}.",
+            attacker=f'Lights turned off in {district}.')
     else:
-        cybercity.turnOnLight(district)
-        session['messages'].append(f"Defender applied {action} to {district}.")
-
-    session['turn'] = 'attacker'
-    return redirect(url_for('index'))
-
-@app.route('/battle_action', methods=['POST'])
-def battle_action():
-    if session['turn'] != 'attacker':
-        return redirect(url_for('index'))
-
-    action = request.form['attack_action']
-    district = request.form['attack_district']
-    cost = int(float(request.form['cost']))
-
-    cybercity.budget['attacker'] -= cost
-
-    if action != 'Skip Turn':
-        if cybercity.hackSuccessful(hacking_actions[action]['probability']):
-            cybercity.turnOffLight(district)
-            session['messages'].append(f"Attacker successfully used {action} on {district}. Lights turned off.")
+        if cybercity.hack_successful(defender_actions[action].probability):
+            cybercity.lights[district] = True
+            cybercity.messageEach(
+                defender=f"Defender successfully used {action} on {district}. Lights turned on.",
+                attacker=f'Lights turned on in {district}.')
         else:
-            session['messages'].append(f"Attacker's {action} on {district} failed.")
-    else:
-        session['messages'].append("Attacker skipped the turn.")
+            cybercity.messageEach(
+                defender=f"Defender's {action} on {district} failed.")
 
-    session['turn'] = 'defender'
-    return redirect(url_for('index'))
+    cybercity.used_locations.append(district)
+    cybercity.budget['defender'] -= defender_actions[action].cost
+    emit_update()
+
+@socketio.on('battle_action')
+def handle_battle_action(data):
+    print(f"Handling battle_action: {data}")  # Debugging
+    action = data['action']
+    district = data['location']
+
+    if (cybercity.turn != 'attacker'
+            or cybercity.budget['attacker'] < attacker_actions[action].cost):
+        return
+
+    if action != "Skip Turn":
+        if cybercity.hack_successful(attacker_actions[action].probability):
+            cybercity.lights[district] = False
+            cybercity.messageEach(
+                defender=f'Lights turned off in {district}.',
+                attacker=f"Attacker successfully used {action} on {district}. Lights turned off.")
+        else:
+            cybercity.messageEach(
+                attacker=f"Attacker's {action} on {district} failed.")
+
+    cybercity.used_locations.append(district)
+    cybercity.budget['attacker'] -= attacker_actions[action].cost
+    emit_update()
+
+@socketio.on('end_turn')
+def handle_end_turn(data):
+    print(f"Handling end_turn: {data}")  # Debugging
+    cybercity.end_turn()
+    emit_update()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, host='192.168.1.169', port=5001, debug=True)
