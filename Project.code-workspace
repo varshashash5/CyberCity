@@ -1,0 +1,61 @@
+{
+  "folders": [
+    {
+      "name": "Project",
+      "path": "."
+    },
+    {
+      "name": "Source",
+      "path": "./src"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/src": false,
+      "**/__pycache__": true
+    },
+    "[python]": {
+      "editor.rulers": [
+        80
+      ],
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "material-icon-theme.folders.associations": {
+      "game": "src",
+      "api": "src",
+      "objects": "src",
+      "cyber_city": "python",
+    },
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.terminal.executeInFileDir": true,
+    "python.formatting.provider": "none",
+    "python.analysis.typeCheckingMode": "off",
+    "liveServer.settings.multiRootWorkspaceName": "Source",
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": []
+  },
+  "launch": {
+    "configurations": [
+      {
+        "name": "Python: Current File",
+        "type": "python",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal",
+        "justMyCode": true
+      },
+      {
+        "name": "Python: Main File",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder:Source}/main.py",
+        "console": "integratedTerminal",
+        "justMyCode": true
+      }
+    ],
+    "compounds": []
+  }
+}
