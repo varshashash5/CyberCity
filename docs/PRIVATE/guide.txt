@@ -1,0 +1,12 @@
+107890.st --> 
+    192.168.1.98
+    substation
+406635.st --> 
+    192.168.1.81
+    emergency generator city block
+692121.st --> 
+    192.168.1.82
+    police and fire emergency generator
+706957.st --> 
+    192.168.1.83
+    traffic lights for city blockc

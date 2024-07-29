@@ -1,0 +1,52 @@
+substation
+- (16 or 24) and 32 --> `Powergrid connected`
+- 48 - Toggles everything if `Powergrid connected`
+
+emergency generator city block
+- No changes when all are toggled
+
+police and fire emergency
+- 16 - toggles everything
+
+traffic lights
+- 24 - police light flash yellow
+- 32 - makes a relay sound but now effect
+- 40 - same as 32
+- 48 - same as previous
+- 56 - possibly all on to test light connections (only yellow and green from police side lit up)
+- 64 - operate like normal light but again only 2 are working
+
+
+===============================================================
+
+SUBSTATION
+
+16 - (power generator)
+24 - (power generator)
+32 - (grid connection)
+
+40 - train and fair grounds
+48 - still nothing
+56 - traffic lights
+64 - city block
+72 - fire and police station
+80 - still nothing
+
+TRAFFIC LIGHTS
+
+0 - <Green_Light_NS>
+1 - <Yellow_Light_NS>
+2 - <Red_Light_NS>
+3 - <Green_Light_EW>
+4 - <Yellow_Light_EW>
+5 - <Red_Light_EW>
+24 - (Blink_Red_NS)
+32 - (Blink_Red_EW)
+40 - (Blink_Red_All)
+48 - (Blink_Yellow_All)
+56 - (TEST_ALL)
+64 - (RUN)
+0
+1
+2
+3
