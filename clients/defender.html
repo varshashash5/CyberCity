@@ -391,9 +391,19 @@
 
     function confirmAction() {
         if (selectedAction && selectedLocation) {
-            socket.emit('confirm_action');
+            socket.emit('confirm_action', {
+                side: 'Defender',
+                action: selectedAction,
+                location: selectedLocation
+            });
         }
     }
+
+    // function confirmAction() {
+    //     if (selectedAction && selectedLocation) {
+    //         socket.emit('confirm_action');
+    //     }
+    // }
 
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {

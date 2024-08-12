@@ -271,11 +271,21 @@
         socket.emit('location', { side: 'Hacker', location });
         checkAndEmitTurnCompletion('Hacker');
     }
+
     function confirmAction() {
         if (selectedAction && selectedLocation) {
-            socket.emit('confirm_action');
+            socket.emit('confirm_action', {
+                side: 'Hacker',
+                action: selectedAction,
+                location: selectedLocation
+            });
         }
     }
+    // function confirmAction() {
+    //     if (selectedAction && selectedLocation) {
+    //         socket.emit('confirm_action');
+    //     }
+    // }
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);

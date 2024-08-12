@@ -1,141 +1,143 @@
-# Copyright SAMSAT
-
-from flask import Flask, render_template, request, redirect, url_for, session
-from cybercity import Cybercity
-from flask_socketio import SocketIO, emit
+# app.py
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
-app.secret_key = 'secret_key'  # session management
-cybercity = Cybercity()
-socketio = SocketIO(app)
 
-base_cost = 10000
 
-class Action():
-    def __init__(self, effect: float, probability: float):
-        self.effect = effect
-        self.probability = probability
-        self.cost = int(base_cost * self.effect * self.probability)
+@app.route('/process_action', methods=['POST'])
+def process_action():
+    data = request.json
+    # Modify the data by appending "py" to each value
+    modified_data = {
+        "side": data['side'] + "py",
+        "action": data['action'] + "py",
+        "location": data['location'] + "py"
+    }
 
-defender_actions = {
-    "Firewall": Action(0.3, 0.7),
-    "Virus Protection": Action(0.15, 0.8),
-    "Intrusion Detection System": Action(0.25, 0.9),
-    "User Training": Action(0.2, 1.0),
-    "Turn Off Lights": Action(0.0, 1.0),
-}
-min_defender_cost = min(x.cost for x in defender_actions.values())
+    # Return the modified data as JSON
+    return jsonify(modified_data)
 
-attacker_actions = {
-    "Phishing": Action(0.35, 0.7),
-    "Virus": Action(0.25, 0.8),
-    "Malware": Action(0.2, 0.9),
-    "Skip Turn": Action(0.0, 1.0),
-}
-min_attacker_cost = min(x.cost for x in attacker_actions.values())
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/choose_role', methods=['POST'])
-def choose_role():
-    role = request.form['role']
-    session['role'] = role
-    return redirect(url_for(role))
-
-@app.route('/defender')
-def defender():
-    if session.get('role') != 'defender':
-        return redirect(url_for('index'))
-    return render_template('defender.html', city=cybercity.lights, turn=cybercity.turn,
-                           budget=cybercity.budget, messages=cybercity.messages,
-                           round=cybercity.round, rounds=cybercity.rounds,
-                           usedLocations=cybercity.used_locations,
-                           actions={ k: v.cost for k, v in defender_actions.items() })
-
-@app.route('/attacker')
-def attacker():
-    if session.get('role') != 'attacker':
-        return redirect(url_for('index'))
-    return render_template('attacker.html', city=cybercity.lights, turn=cybercity.turn,
-                           budget=cybercity.budget, messages=cybercity.messages,
-                           round=cybercity.round, rounds=cybercity.rounds,
-                           usedLocations=cybercity.used_locations,
-                           actions={ k: v.cost for k, v in attacker_actions.items() })
-
-def emit_update():
-    if len(cybercity.used_locations) == len(cybercity.lights):
-        cybercity.end_turn()
-
-    emit('update', {
-        'city': cybercity.lights,
-        'messages': cybercity.messages,
-        'turn': cybercity.turn,
-        'round': cybercity.round,
-        'rounds': cybercity.rounds,
-        'budget': cybercity.budget,
-        'usedLocations': cybercity.used_locations,
-    }, broadcast=True)
-
-@socketio.on('manage_district')
-def handle_manage_district(data):
-    print(f"Handling manage_district: {data}")  # Debugging
-    district = data['location']
-    action = data['action']
-
-    if (cybercity.turn != 'defender'
-            or cybercity.budget['defender'] < defender_actions[action].cost):
-        return
-
-    if action == 'Turn Off Lights':
-        cybercity.lights[district] = False
-        cybercity.messageEach(
-            defender=f"Defender turned off the lights in {district}.",
-            attacker=f'Lights turned off in {district}.')
-    else:
-        if cybercity.hack_successful(defender_actions[action].probability):
-            cybercity.lights[district] = True
-            cybercity.messageEach(
-                defender=f"Defender successfully used {action} on {district}. Lights turned on.",
-                attacker=f'Lights turned on in {district}.')
-        else:
-            cybercity.messageEach(
-                defender=f"Defender's {action} on {district} failed.")
-
-    cybercity.used_locations.append(district)
-    cybercity.budget['defender'] -= defender_actions[action].cost
-    emit_update()
-
-@socketio.on('battle_action')
-def handle_battle_action(data):
-    print(f"Handling battle_action: {data}")  # Debugging
-    action = data['action']
-    district = data['location']
-
-    if (cybercity.turn != 'attacker'
-            or cybercity.budget['attacker'] < attacker_actions[action].cost):
-        return
-
-    if action != "Skip Turn":
-        if cybercity.hack_successful(attacker_actions[action].probability):
-            cybercity.lights[district] = False
-            cybercity.messageEach(
-                defender=f'Lights turned off in {district}.',
-                attacker=f"Attacker successfully used {action} on {district}. Lights turned off.")
-        else:
-            cybercity.messageEach(
-                attacker=f"Attacker's {action} on {district} failed.")
-
-    cybercity.used_locations.append(district)
-    cybercity.budget['attacker'] -= attacker_actions[action].cost
-    emit_update()
-
-@socketio.on('end_turn')
-def handle_end_turn(data):
-    print(f"Handling end_turn: {data}")  # Debugging
-    cybercity.end_turn()
-    emit_update()
 
 if __name__ == '__main__':
-    socketio.run(app, host='192.168.1.169', port=5001, debug=True)
+    app.run(host='127.0.0.1', port=4000)
+
+
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+#
+# app = Flask(__name__)
+# CORS(app)  # Allows cross-origin requests
+#
+# # Initial location health and compromise percentages
+# location_data = {
+#     'Business': {'health': 100, 'compromise': 0},
+#     'Hospital': {'health': 120, 'compromise': 0},
+#     'Fire/Police': {'health': 110, 'compromise': 0},
+#     'Industrial': {'health': 130, 'compromise': 0},
+#     'University': {'health': 90, 'compromise': 0},
+#     'Housing': {'health': 100, 'compromise': 0},
+#     'Fort Sam': {'health': 150, 'compromise': 0},
+#     'Traffic Lights': {'health': 80, 'compromise': 0}
+# }
+#
+# @app.route('/process_action', methods=['POST'])
+# def process_action():
+#     data = request.json
+#     side = data['side']
+#     action = data['action']
+#     location = data['location']
+#     current_health = data['currentHealth']
+#
+#     # Get the location's current data
+#     location_info = location_data.get(location, {'health': 100, 'compromise': 0})
+#
+#     outcome_message = ""
+#     location_neutralized = False
+#
+#     if side == 'Defender':
+#         if action == 'User Training':
+#             location_info['health'] += 10
+#         elif action == 'Virus Protection':
+#             location_info['health'] += 5
+#         elif action == 'Firewall':
+#             location_info['health'] += 5
+#         elif action == 'Intrusion Detection':
+#             pass
+#
+#     elif side == 'Hacker':
+#         if action == 'Phishing':
+#             location_info['compromise'] += 10
+#         elif action == 'Virus':
+#             location_info['compromise'] += 15
+#         elif action == 'Malware':
+#             location_info['compromise'] += 20
+#
+#     # Update location data
+#     location_data[location] = location_info
+#
+#     # Check if the location is neutralized
+#     if location_info['compromise'] > 75:
+#         location_neutralized = True
+#         outcome_message = f"{location} has been neutralized."
+#     else:
+#         outcome_message = f"The action was successful! {location} now has {location_info['health']} health."
+#
+#     return jsonify({
+#         'newHealth': location_info['health'],
+#         'outcomeMessage': outcome_message,
+#         'locationNeutralized': location_neutralized
+#     })
+#
+# if __name__ == '__main__':
+#     app.run(port=4000)
+# /////////////////////
+
+
+# if __name__ == '__main__':
+#     app.run(port=3000)
+
+# # Copyright SAMSAT
+# from flask import Flask, request, jsonify
+# from flask_cors import CORS
+# import random
+#
+# app = Flask(__name__)
+# CORS(app)
+#
+# @app.route('/process_action', methods=['POST'])
+# def process_action():
+#     data = request.json
+#     side = data['side']
+#     action = data['action']
+#     location = data['location']
+#     current_health = data['currentHealth']
+#
+#     success = random.random() < 0.5 if side == 'Hacker' else True
+#     outcome_message = ''
+#     location_neutralized = False
+#
+#     if success:
+#         if side == 'Hacker':
+#             damage = random.randint(10, 30)
+#             new_health = current_health - damage
+#             outcome_message = f'{action} on {location} was successful! {damage} damage was done.'
+#         else:
+#             repair = random.randint(10, 30)
+#             new_health = current_health + repair
+#             outcome_message = f'{action} on {location} was successful! {location} was repaired by {repair}.'
+#     else:
+#         new_health = current_health
+#         outcome_message = f'{action} on {location} failed! No changes were made.'
+#
+#     if new_health <= 0:
+#         new_health = 0
+#         location_neutralized = True
+#
+#     return jsonify({
+#         'newHealth': new_health,
+#         'outcomeMessage': outcome_message,
+#         'locationNeutralized': location_neutralized
+#     })
+#
+# if __name__ == '__main__':
+#     app.run(port=5000)

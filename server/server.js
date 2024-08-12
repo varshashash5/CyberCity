@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
+const axios = require('axios');
 const path = require('path');
 
 const app = express();
@@ -24,6 +25,18 @@ let gameState = {
 
 // Flag to track if the start game message has been sent
 let startMessageSent = false;
+
+// Location health state
+let locationHealth = {
+    'Business': 100,
+    'Hospital': 120,
+    'Fire/Police': 110,
+    'Industrial': 130,
+    'University': 90,
+    'Housing': 100,
+    'Fort Sam': 150,
+    'Traffic Lights': 80
+};
 
 io.on('connection', (socket) => {
     function emitGameMessage(side, message) {
@@ -54,19 +67,11 @@ io.on('connection', (socket) => {
         return true;
     }
 
-    // function checkAndEmitTurnCompletion(side) {
-    //     if (selectedAction && selectedLocation) {
-    //         socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
-    //         console.log(`Sent to ${side}: Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
-    //     }
-    // }
-
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             let confirmMessage = `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click `;
             confirmMessage += side === 'Defender' ? 'Defend.' : 'Hack.';
-            socket.emit(`${side.toLowerCase()}_game_message`, confirmMessage);
-            console.log(`Sent to ${side}: ${confirmMessage}`);
+            emitGameMessage(side, confirmMessage);
         }
     }
 
@@ -79,7 +84,6 @@ io.on('connection', (socket) => {
         let otherState = gameState[otherSide.toLowerCase()];
 
         if (currentState && currentState.disconnected) {
-            // Player is reconnecting
             currentState.socket = socket;
             currentState.disconnected = false;
             socket.emit(`${side.toLowerCase()}_game_message`, 'You have reconnected as ' + side);
@@ -89,25 +93,18 @@ io.on('connection', (socket) => {
             console.log(`${side} has reconnected`);
 
             if (otherState && !otherState.disconnected) {
-                // Notify the other side that this side has reconnected
                 emitGameMessage(otherSide, `${side} has reconnected`);
-                console.log(`Sent to ${otherSide}: ${side} has reconnected`);
             }
         } else {
-            // Player is logging in for the first time
             gameState[side.toLowerCase()] = { socket: socket, disconnected: false };
             socket.emit(`${side.toLowerCase()}_game_message`, 'You have logged in as ' + side);
             if (ackCallback) {
                 ackCallback(`You have logged in as ${side}`);
             }
-            console.log(`${side} has logged in`);
 
             if (otherState) {
-                // Notify the other side that this side has logged in
                 emitGameMessage(otherSide, `${side} has logged in`);
                 socket.emit(`${side.toLowerCase()}_game_message`, `${otherSide} was already logged in`);
-                console.log(`Sent to ${otherSide}: ${side} has logged in`);
-                console.log(`Sent to ${side}: ${otherSide} was already logged in`);
             }
         }
     });
@@ -121,82 +118,13 @@ io.on('connection', (socket) => {
             if (currentState) {
                 currentState.disconnected = true;
                 emitGameMessage(currentSide, 'You have disconnected');
-                console.log(`${currentSide} has disconnected`);
 
                 if (gameState[otherSide.toLowerCase()] && !gameState[otherSide.toLowerCase()].disconnected) {
-                    // Notify the other side that this side has disconnected
                     emitGameMessage(otherSide, `${currentSide} has disconnected`);
-                    console.log(`Sent to ${otherSide}: ${currentSide} has disconnected`);
                 }
             }
         }
     });
-
-    // socket.on('ready_up', ({ side }) => {
-    //     if (side === 'Defender') {
-    //         defenderReady = true;
-    //         emitGameMessage('defender', 'Defender has confirmed they are ready to start');
-    //     } else if (side === 'Hacker') {
-    //         hackerReady = true;
-    //         emitGameMessage('hacker', 'Hacker has confirmed they are ready to start');
-    //     }
-    //
-    //     if (defenderReady && hackerReady && !startMessageSent) {
-    //         // Emit the start game message to each player once
-    //         emitGameMessage('defender', 'Both players are ready. The game begins now!');
-    //         emitGameMessage('hacker', 'Both players are ready. The game begins now!');
-    //         emitGameMessage('defender', 'You get the first two turns. I will let you know when your turns are over.');
-    //         emitGameMessage('hacker', 'Defender gets the first two turns. I will let you know when it is your turn.');
-    //         startMessageSent = true; // Ensure the message is only sent once
-    //         console.log('Both players are ready. The game begins now!');
-    //
-    //         // Hide the ready-up buttons
-    //         io.emit('hide_ready_buttons');
-    //
-    //         // Handle game start logic
-    //         io.emit('start_game'); // Emitting a start game event to handle initial game state
-    //     } else if (!defenderReady || !hackerReady) {
-    //         // Notify the individual sides of their readiness status
-    //         const waitingMessage = side === 'Defender'
-    //             ? 'Defender has confirmed they are ready to start, they are waiting on you to click ready up'
-    //             : 'Hacker has confirmed they are ready to start, they are waiting on you to click ready up';
-    //         emitGameMessage(side === 'Defender' ? 'hacker' : 'defender', waitingMessage);
-    //     }
-    // });
-
-    // socket.on('ready_up', ({ side }) => {
-    //     if (side === 'Defender') {
-    //         defenderReady = true;
-    //         emitGameMessage('defender', 'Defender has confirmed they are ready to start');
-    //     } else if (side === 'Hacker') {
-    //         hackerReady = true;
-    //         emitGameMessage('hacker', 'Hacker has confirmed they are ready to start');
-    //     }
-    //
-    //     if (defenderReady && hackerReady && !startMessageSent) {
-    //         // Emit the start game message to each player once
-    //         emitGameMessage('defender', 'Both players are ready. The game begins now!');
-    //         emitGameMessage('hacker', 'Both players are ready. The game begins now!');
-    //         emitGameMessage('defender', 'You get the first two turns. I will let you know when your turns are over.');
-    //         emitGameMessage('hacker', 'Defender gets the first two turns. I will let you know when it is your turn.');
-    //         startMessageSent = true; // Ensure the message is only sent once
-    //         console.log('Both players are ready. The game begins now!');
-    //
-    //         // Hide the ready-up buttons
-    //         io.emit('hide_ready_buttons');
-    //
-    //         // Handle game start logic
-    //         io.emit('start_game'); // Emitting a start game event to handle initial game state
-    //     } else if (!defenderReady || !hackerReady) {
-    //         // Notify the individual sides of their readiness status
-    //         const waitingMessage = side === 'Defender'
-    //             ? 'Defender has confirmed they are ready to start, they are waiting on you to click ready up'
-    //             : 'Hacker has confirmed they are ready to start, they are waiting on you to click ready up';
-    //         emitGameMessage(side === 'Defender' ? 'hacker' : 'defender', waitingMessage);
-    //     }
-    // });
-
-
 
     socket.on('ready_up', ({ side }) => {
         if (side === 'Defender') {
@@ -207,22 +135,17 @@ io.on('connection', (socket) => {
             emitGameMessage('hacker', 'Hacker has confirmed they are ready to start');
         }
 
+        // Ensure that the start game message is only sent once
         if (defenderReady && hackerReady && !startMessageSent) {
-            // Emit the start game message to each player once
             emitGameMessage('defender', 'Both players are ready. The game begins now!');
             emitGameMessage('hacker', 'Both players are ready. The game begins now!');
             emitGameMessage('defender', 'You get the first two turns. I will let you know when your turns are over.');
             emitGameMessage('hacker', 'Defender gets the first two turns. I will let you know when it is your turn.');
-            startMessageSent = true; // Ensure the message is only sent once
-            console.log('Both players are ready. The game begins now!');
+            startMessageSent = true;
 
-            // Hide the ready-up buttons
             io.emit('hide_ready_buttons');
-
-            // Handle game start logic
-            io.emit('start_game', currentTurn); // Emitting the current turn with the start game event
+            io.emit('start_game', currentTurn);
         } else if (!defenderReady || !hackerReady) {
-            // Notify the individual sides of their readiness status
             const waitingMessage = side === 'Defender'
                 ? 'Defender has confirmed they are ready to start, they are waiting on you to click ready up'
                 : 'Hacker has confirmed they are ready to start, they are waiting on you to click ready up';
@@ -230,14 +153,11 @@ io.on('connection', (socket) => {
         }
     });
 
-
-
     socket.on('start_game', () => {
         if (defenderReady && hackerReady && startMessageSent) {
-            // Send the appropriate start game messages and handle initial game state
             emitGameMessage('defender', 'You get the first two turns. I will let you know when your turns are over.');
             emitGameMessage('hacker', 'Defender gets the first two turns. I will let you know when it is your turn.');
-            io.emit('turn', currentTurn); // Start with Defender's turn
+            io.emit('turn', currentTurn);
         }
     });
 
@@ -250,7 +170,6 @@ io.on('connection', (socket) => {
         console.log(`Selected location: ${location} by ${side}`);
         if (!selectedAction) {
             socket.emit(`${side.toLowerCase()}_game_message`, `What action would you like to apply to ${location}?`);
-            console.log(`Sent to ${side}: What action would you like to apply to ${location}?`);
         } else {
             checkAndEmitTurnCompletion(side);
         }
@@ -265,38 +184,46 @@ io.on('connection', (socket) => {
         console.log(`Selected action: ${action} by ${side}`);
         if (!selectedLocation) {
             socket.emit(`${side.toLowerCase()}_game_message`, `What location would you like to apply ${action} to?`);
-            console.log(`Sent to ${side}: What location would you like to apply ${action} to?`);
         } else {
             checkAndEmitTurnCompletion(side);
         }
     });
 
-    socket.on('confirm_action', () => {
-        if (selectedAction && selectedLocation) {
-            io.emit(`${currentTurn.toLowerCase()}_game_message`, `${currentTurn} has applied ${selectedAction} to ${selectedLocation}`);
-            console.log(`${currentTurn} has applied ${selectedAction} to ${selectedLocation}`);
+    socket.on('confirm_action', async (data) => {
+        console.log('Data received from client:', data);
 
-            if (currentTurn === 'Defender') {
-                if (defenderInitialTurns > 1) {
-                    defenderInitialTurns--;
-                    emitGameMessage('defender', 'You have one turn left.');
-                } else {
-                    emitGameMessage('hacker', 'The defender has finished their turn, it\'s your turn to act');
-                    emitGameMessage('defender', 'You have finished your turn');
-                    currentTurn = 'Hacker'; // Switch to Hacker's turn
-                }
-            } else if (currentTurn === 'Hacker') {
-                emitGameMessage('defender', 'The hacker has completed their turn, it\'s your move now');
-                emitGameMessage('hacker', 'You have finished your turn');
-                currentTurn = 'Defender'; // Switch to Defender's turn
-            }
+        // Check if data is correctly received
+        if (!data || !data.side || !data.action || !data.location) {
+            console.error('Received incomplete data:', data);
+            socket.emit('error_message', 'Incomplete data received. Please try again.');
+            return;
+        }
 
-            selectedAction = null;
-            selectedLocation = null;
-            io.emit('turn', currentTurn);
-            console.log(`Turn: ${currentTurn}`);
+        try {
+            // Send a POST request to the Flask server with the action data
+            const response = await axios.post('http://127.0.0.1:4000/process_action', {
+                side: data.side,
+                action: data.action,
+                location: data.location
+            });
+
+
+            // Process the response from the Python server
+            const modifiedData = response.data;
+
+            console.log('Data received from Python server:', modifiedData);
+
+            // Emit the modified data back to the client whose turn it was
+            emitGameMessage(data.side, `Received from Python: ${modifiedData.action} was applied to ${modifiedData.location} by ${modifiedData.side}`);
+
+        } catch (error) {
+            console.error('Error communicating with the Python server:', error.message);
+            socket.emit('error_message', 'Failed to process action. Please try again.');
         }
     });
+
+
+
 });
 
 const PORT = process.env.PORT || 3000;
