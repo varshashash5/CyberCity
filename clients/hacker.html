@@ -130,6 +130,11 @@
             /*display: flex;*/
             align-items: flex-end;
         }
+
+        .game-over {
+            color: red;
+            font-weight: bold;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -140,6 +145,8 @@
         <div>
             Current Turn: <span id="currentTurn">Loading...</span>
         </div>
+        <div id="roundNumber" style="font-size: 1.2rem; font-weight: bold;">Round 1</div> <!-- New round number element -->
+
         <div class="lightbulb">
             <span id="lightbulb"></span>
             <p id="turnMessage">Loading...</p>
@@ -220,6 +227,7 @@
         document.getElementById('currentTurn').textContent = turn;
         updateLightbulb(turn);
     });
+
     socket.on('hide_ready_buttons', () => {
         document.getElementById('readyButtonDiv').classList.add('hidden');
     });
@@ -240,6 +248,7 @@
             turnMessage.textContent = "Not your turn!";
         }
     }
+
     function readyUp() {
         const readyButton = document.getElementById('readyButton');
         readyButton.classList.remove('btn-secondary');
@@ -247,50 +256,95 @@
         readyButton.disabled = true; // Disable button to prevent multiple clicks
         socket.emit('ready_up', { side: 'Hacker' });
     }
-    function updateTurnUI(turn) {
-        const currentTurn = document.getElementById('currentTurn');
-        const turnMessage = document.getElementById('turnMessage');
-        const lightbulb = document.getElementById('lightbulb');
-        if (turn === 'Hacker') {
-            currentTurn.textContent = 'Hacker';
-            turnMessage.textContent = "It's your turn!";
-            lightbulb.classList.add('on');
-        } else {
-            currentTurn.textContent = 'Defender';
-            turnMessage.textContent = 'Not your turn!';
-            lightbulb.classList.remove('on');
-        }
-    }
+    // function updateTurnUI(turn) {
+    //     const currentTurn = document.getElementById('currentTurn');
+    //     const turnMessage = document.getElementById('turnMessage');
+    //     const lightbulb = document.getElementById('lightbulb');
+    //     if (turn === 'Hacker') {
+    //         currentTurn.textContent = 'Hacker';
+    //         turnMessage.textContent = "It's your turn!";
+    //         lightbulb.classList.add('on');
+    //     } else {
+    //         currentTurn.textContent = 'Defender';
+    //         turnMessage.textContent = 'Not your turn!';
+    //         lightbulb.classList.remove('on');
+    //     }
+    // }
     function selectAction(action) {
         selectedAction = action;
-        socket.emit('actions', { side: 'Hacker', action });
+        socket.emit('action', { side: 'Hacker', action });
         checkAndEmitTurnCompletion('Hacker');
     }
     function selectLocation(location) {
         selectedLocation = location;
+        console.log(`Selected location: ${selectedLocation}`);
         socket.emit('location', { side: 'Hacker', location });
         checkAndEmitTurnCompletion('Hacker');
     }
 
     function confirmAction() {
         if (selectedAction && selectedLocation) {
+            console.log(`Confirming action: ${selectedAction} on location: ${selectedLocation}`);
             socket.emit('confirm_action', {
                 side: 'Hacker',
                 action: selectedAction,
                 location: selectedLocation
             });
+        } else {
+            console.log('Action or location not selected properly.');
         }
     }
-    // function confirmAction() {
-    //     if (selectedAction && selectedLocation) {
-    //         socket.emit('confirm_action');
-    //     }
-    // }
+
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
         }
     }
+
+    socket.on('round_update', (round) => {
+        document.getElementById('roundNumber').textContent = `Round ${round}`;
+    });
+
+
+    socket.on('game_over', () => {
+        document.getElementById('currentTurn').textContent = 'Game Over';
+        document.getElementById('lightbulb').classList.remove('on');
+        document.getElementById('turnMessage').textContent = 'Not your turn!';
+        document.getElementById('readyButtonDiv').classList.add('hidden'); // Hide the ready button
+    });
+
+
+
+
+
+    function updateTurnUI(turn) {
+        if (document.getElementById('currentTurn').textContent !== 'Game Over') {
+            document.getElementById('currentTurn').textContent = turn;
+            const lightbulb = document.getElementById('lightbulb');
+            const turnMessage = document.getElementById('turnMessage');
+            if (turn === 'Defender') {
+                lightbulb.classList.add('on');
+                turnMessage.textContent = "It's your turn!";
+            } else {
+                lightbulb.classList.remove('on');
+                turnMessage.textContent = "Not your turn!";
+            }
+        }
+    }
+    socket.on('player_turn_status', ({ isYourTurn }) => {
+        const lightbulb = document.getElementById('lightbulb');
+        const turnMessage = document.getElementById('turnMessage');
+
+        if (isYourTurn) {
+            lightbulb.classList.add('on');
+            turnMessage.textContent = "It's your turn!";
+        } else {
+            lightbulb.classList.remove('on');
+            turnMessage.textContent = "Not your turn!";
+        }
+    });
+
+
 </script>
 </body>
 </html>
