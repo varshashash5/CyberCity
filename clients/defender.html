@@ -5,6 +5,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber City Battle</title>
     <style>
+        /*body {*/
+        /*    background-color: #121212;*/
+        /*    color: #c0c0c0;*/
+        /*    font-family: 'Orbitron', sans-serif;*/
+        /*}*/
+        /*.container {*/
+        /*    background-image: linear-gradient(to bottom right, #242424, #484848);*/
+        /*    padding: 2rem;*/
+        /*    border-radius: 0.5rem;*/
+        /*    box-shadow: 0 2.5rem 6.25rem rgba(0, 255, 255, 0.5);*/
+        /*    margin: 2rem auto;*/
+        /*    max-width: 80vw; !* Adjust as needed for larger screens *!*/
+        /*}*/
+        /*h1, h2 {*/
+        /*    color: #00ffea;*/
+        /*}*/
+        /*.btn {*/
+        /*    margin-top: 1rem;*/
+        /*    padding: 1rem 2rem;*/
+        /*    border: none;*/
+        /*    border-radius: 0.5rem;*/
+        /*    cursor: pointer;*/
+        /*    color: #fff;*/
+        /*    font-size: 1em;*/
+        /*}*/
+        /*.btn-danger {*/
+        /*    background-color: green;*/
+        /*}*/
+        /*.btn-success {*/
+        /*    background-color: #4caf50;*/
+        /*}*/
+        /*.btn-warning {*/
+        /*    background-color: #ff9800;*/
+        /*}*/
+        /*.btn-secondary {*/
+        /*    background-color: #6c757d;*/
+        /*}*/
+        /*.alert-primary {*/
+        /*    background-color: #007bff;*/
+        /*    border-color: #0056b3;*/
+        /*    padding: 1rem;*/
+        /*    border-radius: 0.5rem;*/
+        /*    display: flex;*/
+        /*    justify-content: space-between;*/
+        /*    align-items: center;*/
+        /*}*/
+        /*.btn:hover {*/
+        /*    opacity: 0.8;*/
+        /*}*/
+        /*.row {*/
+        /*    display: flex;*/
+        /*    flex-wrap: wrap;*/
+        /*    margin-bottom: 2rem;*/
+        /*}*/
+        /*.col-md-12 {*/
+        /*    flex: 0 0 96%;*/
+        /*    max-width: 100%;*/
+        /*    padding: 1rem;*/
+        /*}*/
+
+        /*.mt-4 {*/
+        /*    margin-top: 1.5rem !important;*/
+        /*}*/
+        /*.alert-secondary {*/
+        /*    color: #41464b;*/
+        /*    background-color: #e2e3e5;*/
+        /*    border-color: #d3d6d8;*/
+        /*}*/
+        /*.alert {*/
+        /*    position: relative;*/
+        /*    padding: 1rem;*/
+        /*    margin-bottom: 1rem;*/
+        /*    border: 1px solid transparent;*/
+        /*    border-radius: .25rem;*/
+        /*}*/
+
+        /*.alert-secondary li:last-child {*/
+        /*    color: teal;*/
+        /*}*/
+
+        /*!* Custom scroll bars *!*/
+        /*::-webkit-scrollbar {*/
+        /*    width: 1rem;*/
+        /*}*/
+        /*::-webkit-scrollbar-track {*/
+        /*    background: #f1f1f1;*/
+        /*}*/
+        /*::-webkit-scrollbar-thumb {*/
+        /*    background: #888;*/
+        /*}*/
+        /*::-webkit-scrollbar-thumb:hover {*/
+        /*    background: #555;*/
+        /*}*/
+
+        /*!* Lightbulb styles *!*/
+        /*.lightbulb {*/
+        /*    display: flex;*/
+        /*    align-items: center;*/
+        /*}*/
+        /*.lightbulb span {*/
+        /*    display: inline-block;*/
+        /*    width: 2rem;*/
+        /*    height: 2rem;*/
+        /*    background-color: grey;*/
+        /*    border-radius: 50%;*/
+        /*    margin-right: 1rem;*/
+        /*}*/
+        /*.lightbulb span.on {*/
+        /*    background-color: yellow;*/
+        /*}*/
+
+        /*!* Flex layout for the button row *!*/
+        /*.button-row {*/
+        /*    display: flex;*/
+        /*    justify-content: space-between;*/
+        /*    align-items: center;*/
+        /*}*/
+
+        /*#gameMessages {*/
+        /*    max-height: 12vh;*/
+        /*    overflow-y: auto;*/
+        /*}*/
+
+        /*!* CSS for displaying the shield*!*/
+        /*.shield {*/
+        /*    width: 50px;  !* Adjust this value to fit your design *!*/
+        /*    height: auto; !* Maintains aspect ratio *!*/
+        /*}*/
+
+        /*.game-over {*/
+        /*    color: red;*/
+        /*    font-weight: bold;*/
+        /*}*/
+
+
+        /*!* Modal styles *!*/
+        /*.modal {*/
+        /*    display: none;*/
+        /*    position: fixed;*/
+        /*    z-index: 9999;*/
+        /*    left: 0;*/
+        /*    top: 0;*/
+        /*    width: 100%;*/
+        /*    height: 100%;*/
+        /*    background-color: rgba(0, 0, 0, 0.8);*/
+        /*    justify-content: center;*/
+        /*    align-items: center;*/
+        /*}*/
+
+        /*.modal-content {*/
+        /*    background-color: #121212;*/
+        /*    padding: 2rem;*/
+        /*    border-radius: 10px;*/
+        /*    text-align: center;*/
+        /*    color: #c0c0c0;*/
+        /*}*/
+
+        /*!* Winner theme *!*/
+        /*.winner-theme {*/
+        /*    border: 2px solid #4caf50;*/
+        /*}*/
+
+        /*!* Loser theme *!*/
+        /*.loser-theme {*/
+        /*    border: 2px solid red;*/
+        /*}*/
+
+        /*!* Hidden class *!*/
+        /*.hidden {*/
+        /*    display: none;*/
+        /*}*/
+
+
+
+
+
         body {
             background-color: #121212;
             color: #c0c0c0;
@@ -31,7 +207,7 @@
             font-size: 1em;
         }
         .btn-danger {
-            background-color: green;
+            background-color: #ff073a;
         }
         .btn-success {
             background-color: #4caf50;
@@ -64,7 +240,6 @@
             max-width: 100%;
             padding: 1rem;
         }
-
         .mt-4 {
             margin-top: 1.5rem !important;
         }
@@ -80,11 +255,9 @@
             border: 1px solid transparent;
             border-radius: .25rem;
         }
-
         .alert-secondary li:last-child {
             color: teal;
         }
-
         /* Custom scroll bars */
         ::-webkit-scrollbar {
             width: 1rem;
@@ -98,7 +271,6 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-
         /* Lightbulb styles */
         .lightbulb {
             display: flex;
@@ -115,6 +287,10 @@
         .lightbulb span.on {
             background-color: yellow;
         }
+        #gameMessages {
+            max-height: 12vh;
+            overflow-y: auto;
+        }
 
         /* Flex layout for the button row */
         .button-row {
@@ -123,38 +299,147 @@
             align-items: center;
         }
 
-        #gameMessages {
-            max-height: 12vh;
-            overflow-y: auto;
-        }
-
-        /* CSS class for hidden elements */
-        .hidden {
-            display: none;
+        #readyButtonDiv {
+            /*display: flex;*/
+            align-items: flex-end;
         }
 
         .game-over {
             color: red;
             font-weight: bold;
         }
+
+        /* CSS for displaying the shield GIF */
+        .shield {
+            width: 50px;  /* Adjust this value to fit your design */
+            height: auto; /* Maintains aspect ratio */
+        }
+
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #121212;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            color: #c0c0c0;
+        }
+
+        /* Winner theme */
+        .winner-theme {
+            border: 2px solid #4caf50;
+        }
+
+        /* Loser theme */
+        .loser-theme {
+            border: 2px solid red;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
+
+
+
+        /**/
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .location {
+            background-color: #2c2c2c;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.5);
+        }
+
+        .location button {
+            flex-grow: 1;
+            margin-right: 1rem;
+            background-color: #6c757d;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            padding: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .location-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .shield-container {
+            position: relative;
+            width: 50px;
+            height: 50px;
+        }
+
+        .shield {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .shield-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+
+
+
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
 <div class="container">
     <h1>Cyber City Battle</h1>
 
     <div class="alert alert-primary" role="alert">
         <div>
-            Current Turn: <span id="currentTurn">Loading...</span>
+            Current Turn: <span id="currentTurn">Waiting for Players...</span>
         </div>
-        <div id="roundNumber" style="font-size: 1.2rem; font-weight: bold;">Round 1</div> <!-- New round number element -->
+        <div id="roundNumber" style="font-size: 1.2rem; font-weight: bold;">Round 1</div>
 
         <div class="lightbulb">
             <span id="lightbulb"></span>
-            <p id="turnMessage">Loading...</p>
+            <p id="turnMessage">Ready Up to Begin!</p>
         </div>
     </div>
+
+
 
     <div class="row">
         <div class="col-md-12 button-row">
@@ -168,6 +453,9 @@
                 <h2>Ready Up</h2>
                 <button type="button" id="readyButton" class="btn btn-ready btn-secondary" onclick="readyUp()">Ready Up</button>
             </div>
+            <div>
+                <h3>Your Budget: <span id="budgetDisplay">$100000</span></h3>
+            </div>
         </div>
     </div>
     <!--    <h2>Districts</h2>-->
@@ -180,16 +468,123 @@
     <button class="btn btn-warning" onclick="selectAction('Virus Protection')">Virus Protection</button>
     <button class="btn btn-warning" onclick="selectAction('Intrusion Detection')">Intrusion Detection</button>
     <button class="btn btn-warning" onclick="selectAction('User Training')">User Training</button>
+    <button class="btn btn-warning" id="skipButton" style="display:none;" onclick="skipTurn('Defender')">
+        Skip Turn
+    </button>
     <p></p>
     <h2>Locations</h2>
-    <button class="btn btn-secondary" onclick="selectLocation('Business')">Business</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Hospital')">Hospital</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Fire/Police')">Fire/Police</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Industrial')">Industrial</button>
-    <button class="btn btn-secondary" onclick="selectLocation('University')">University</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Housing')">Housing</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Fort Sam')">Fort Sam</button>
-    <button class="btn btn-secondary" onclick="selectLocation('Traffic Lights')">Traffic Lights</button>
+    <div class="location-grid">
+        <!-- Location Example -->
+        <div class="location">
+            <button onclick="selectLocation('Business')" id="Business">Business</button>
+            <div class="location-info">
+                <span id="Business-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Business-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Business-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Hospital')" id="Hospital">Hospital</button>
+            <div class="location-info">
+                <span id="Hospital-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Hospital-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Hospital-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Fire/Police')" id="Fire/Police">Fire/Police</button>
+            <div class="location-info">
+                <span id="Fire/Police-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Fire/Police-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Fire/Police-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Industrial')" id="Industrial">Industrial</button>
+            <div class="location-info">
+                <span id="Industrial-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Industrial-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Industrial-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('University')" id="University">University</button>
+            <div class="location-info">
+                <span id="University-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="University-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="University-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Housing')" id="Housing">Housing</button>
+            <div class="location-info">
+                <span id="Housing-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Housing-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Housing-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Fort Sam')" id="Fort Sam">Fort Sam</button>
+            <div class="location-info">
+                <span id="Fort Sam-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Fort Sam-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Fort Sam-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="location">
+            <button onclick="selectLocation('Traffic Lights')" id="Traffic Lights">Traffic Lights</button>
+            <div class="location-info">
+                <span id="Traffic Lights-compromise">Compromised: 0%</span>
+                <div class="shield-container">
+                    <img class="shield" id="Traffic Lights-shield" src="shield.png" alt="Shield">
+                    <span class="shield-value" id="Traffic Lights-shield-value">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Winner Modal -->
+    <div id="winnerModal" class="modal hidden">
+        <div class="modal-content winner-theme">
+            <h2>Congratulations, Defender Wins!</h2>
+            <p>Final Score: Hacker <span id="winnerHackerScore"></span> - Defender <span id="winnerDefenderScore"></span></p>
+            <button onclick="closeModal('winnerModal', 'Defender')">Close</button>
+        </div>
+    </div>
+
+    <!-- Loser Modal -->
+    <div id="loserModal" class="modal hidden">
+        <div class="modal-content loser-theme">
+            <h2>Sorry, Hacker Wins!</h2>
+            <p>Final Score: Hacker <span id="loserHackerScore"></span> - Defender <span id="loserDefenderScore"></span></p>
+            <button onclick="closeModal('loserModal', 'Defender')">Close</button>
+        </div>
+    </div>
+
+
+
 
     <div class="alert alert-secondary mt-4" role="alert">
         <h2>Game Messages</h2>
@@ -199,38 +594,39 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+
     const socket = io();
     let selectedAction = null;
     let selectedLocation = null;
 
+
     socket.emit('login', 'Defender');
+
 
     socket.on('connect', () => {
         console.log('Connected to server');
     });
 
+
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
     });
 
-    // socket.on('game_message', (message) => {
-    //     const gameMessages = document.getElementById('gameMessages');
-    //     const messageElement = document.createElement('li');
-    //     messageElement.textContent = message;
-    //
-    //     const previousMessage = gameMessages.querySelector('li:last-child');
-    //     if (previousMessage) {
-    //         previousMessage.style.color = ''; // Reset color to default
-    //     }
-    //
-    //     gameMessages.appendChild(messageElement);
-    //     scrollToBottom(gameMessages);
-    //
-    //     // Hide the ready button if both players are ready
-    //     if (message.includes('Both players are ready')) {
-    //         document.getElementById('readyButtonDiv').classList.add('hidden');
-    //     }
-    // });
+
+    socket.on('start_game', (data) => {
+        console.log(`Game started: round ${data.round}, turn ${data.turn}`);
+    });
+
+
+    socket.on('opponent_found', (side) => {
+        // Move to the game page depending on the side chosen
+        if (side === 'hacker') {
+            window.location.href = '/hacker.html';
+        } else {
+            window.location.href = '/defender.html';
+        }
+    });
+
 
     socket.on('defender_game_message', (message) => {
         const gameMessages = document.getElementById('gameMessages');
@@ -246,24 +642,19 @@
         scrollToBottom(gameMessages);
     });
 
+
     socket.on('turn', (turn) => {
         updateTurnUI(turn);
     });
+
 
     socket.on('hide_ready_buttons', () => {
         document.getElementById('readyButtonDiv').classList.add('hidden');
     });
 
+
     socket.on('start_game', (turn) => {
         updateTurnUI(turn);
-    });
-
-
-    socket.on('game_over', () => {
-        document.getElementById('currentTurn').textContent = 'Game Over';
-        document.getElementById('lightbulb').classList.remove('on');
-        document.getElementById('turnMessage').textContent = 'Not your turn!';
-        document.getElementById('readyButtonDiv').classList.add('hidden'); // Hide the ready button
     });
 
 
@@ -272,47 +663,41 @@
     }
 
 
-    function updateTurnUI(turn) {
-        if (document.getElementById('currentTurn').textContent !== 'Game Over') {
-            document.getElementById('currentTurn').textContent = turn;
-            const lightbulb = document.getElementById('lightbulb');
-            const turnMessage = document.getElementById('turnMessage');
-            if (turn === 'Defender') {
-                lightbulb.classList.add('on');
-                turnMessage.textContent = "It's your turn!";
-            } else {
-                lightbulb.classList.remove('on');
-                turnMessage.textContent = "Not your turn!";
-            }
-        }
-    }
 
-    function updateLightbulb(turn) {
+    function updateTurnUI(turn) {
+        document.getElementById('currentTurn').textContent = turn;
         const lightbulb = document.getElementById('lightbulb');
         const turnMessage = document.getElementById('turnMessage');
-        if (turn === 'Hacker') {
+        const skipButton = document.getElementById('skipButton');
+
+        if (turn === 'Defender') {
             lightbulb.classList.add('on');
             turnMessage.textContent = "It's your turn!";
+            skipButton.style.display = 'inline-block';  // Show skip button
         } else {
             lightbulb.classList.remove('on');
             turnMessage.textContent = "Not your turn!";
+            skipButton.style.display = 'none';  // Hide skip button
         }
     }
 
+    function skipTurn(side) {
+        console.log(`Skipping turn for ${side}`);
+        socket.emit('skip_turn', { side });
+    }
 
+    socket.on('round_update', (round) => {
+        document.getElementById('roundNumber').textContent = `Round ${round}`;
+    });
 
-    // function updateTurnUI(turn) {
-    //     document.getElementById('currentTurn').textContent = turn;
-    //     const lightbulb = document.getElementById('lightbulb');
-    //     const turnMessage = document.getElementById('turnMessage');
-    //     if (turn === 'Defender') {
-    //         lightbulb.classList.add('on');
-    //         turnMessage.textContent = "It's your turn!";
-    //     } else {
-    //         lightbulb.classList.remove('on');
-    //         turnMessage.textContent = "Not your turn!";
-    //     }
-    // }
+    socket.on('player_turn_status', ({ isYourTurn }) => {
+        updateTurnUI(isYourTurn ? 'Defender' : 'Hacker');
+    });
+
+    socket.on('budget_update', ({ defenderBudget, message }) => {
+        document.getElementById('budgetDisplay').innerText = `$${defenderBudget}`;
+        console.log(message);
+    });
 
     function readyUp() {
         const readyButton = document.getElementById('readyButton');
@@ -322,6 +707,7 @@
         socket.emit('ready_up', { side: 'Defender' });
     }
 
+
     function selectAction(action) {
         selectedAction = action;
         console.log(`Selected action: ${selectedAction}`);
@@ -329,12 +715,14 @@
         checkAndEmitTurnCompletion('Defender');
     }
 
+
     function selectLocation(location) {
         selectedLocation = location;
         console.log(`Selected location: ${selectedLocation}`);
         socket.emit('location', { side: 'Defender', location });
         checkAndEmitTurnCompletion('Defender');
     }
+
 
     function confirmAction() {
         if (selectedAction && selectedLocation) {
@@ -349,16 +737,13 @@
         }
     }
 
+
     function checkAndEmitTurnCompletion(side) {
         if (selectedAction && selectedLocation) {
             console.log(`Action and location selected, emitting turn completion for ${side}`);
             socket.emit(`${side.toLowerCase()}_game_message`, `Are you sure you would like to apply ${selectedAction} to ${selectedLocation}? If yes, click Confirm.`);
         }
     }
-
-    socket.on('round_update', (round) => {
-        document.getElementById('roundNumber').textContent = `Round ${round}`;
-    });
 
 
     socket.on('game_message', (message) => {
@@ -380,22 +765,126 @@
         }
     });
 
+
     socket.on('hide_ready_buttons', () => {
         document.getElementById('readyButtonDiv').classList.add('hidden');
     });
-    socket.on('player_turn_status', ({ isYourTurn }) => {
-        const lightbulb = document.getElementById('lightbulb');
-        const turnMessage = document.getElementById('turnMessage');
 
-        if (isYourTurn) {
-            lightbulb.classList.add('on');
-            turnMessage.textContent = "It's your turn!";
-        } else {
-            lightbulb.classList.remove('on');
-            turnMessage.textContent = "Not your turn!";
+
+
+    socket.on('game_over', ({ winner, hackerScore, defenderScore }) => {
+        document.getElementById('currentTurn').textContent = 'Game Over';
+        document.getElementById('lightbulb').classList.remove('on');
+        document.getElementById('turnMessage').textContent = 'Not your turn!';
+
+        const gameMessages = document.getElementById('gameMessages');
+        const messageElement = document.createElement('li');
+        messageElement.classList.add('game-over');
+        messageElement.textContent = `${winner} wins! Final Score: Defender ${defenderScore} - Hacker ${hackerScore}`;
+        gameMessages.appendChild(messageElement);
+
+        scrollToBottom(gameMessages);
+
+        // Determine winner or loser and show respective modal
+        if (winner === 'Defender') {
+            // Defender won, show the winner modal
+            document.getElementById('winnerDefenderScore').textContent = defenderScore;
+            document.getElementById('winnerHackerScore').textContent = hackerScore;
+            openModal('winnerModal');
+        } else if (winner === 'Hacker') {
+            // Hacker won, show the loser modal
+            document.getElementById('loserDefenderScore').textContent = defenderScore;
+            document.getElementById('loserHackerScore').textContent = hackerScore;
+            openModal('loserModal');
         }
+
+        document.getElementById('readyButtonDiv').classList.add('hidden');
     });
 
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+        document.getElementById(modalId).style.display = 'flex';  // Flex to center the modal
+    }
+
+    function closeModal(modalId, clientType) {
+        document.getElementById(modalId).classList.add('hidden');
+        document.getElementById(modalId).style.display = 'none';
+        socket.emit('restart_game', { clientType });
+    }
+
+    socket.on('game_reset', ({ round, turn }) => {
+        console.log('game_reset emit received');
+        document.getElementById('currentTurn').textContent = `Round ${round}, ${turn}'s turn`;
+        document.getElementById('lightbulb').classList.add('on');
+        document.getElementById('turnMessage').textContent = 'It\'s your turn!';
+
+        const gameMessages = document.getElementById('gameMessages');
+        gameMessages.innerHTML = '';
+
+        document.getElementById('readyButtonDiv').classList.remove('hidden');
+    });
+
+
+    socket.on('redirect', ({ url }) => {
+        window.location.href = url;
+    });
+
+
+    socket.on('update_shield_values', (shieldData) => {
+        updateShieldVisibility('Business', shieldData['Business']);
+        updateShieldVisibility('Hospital', shieldData['Hospital']);
+        updateShieldVisibility('Fire/Police', shieldData['Fire/Police']);
+        updateShieldVisibility('Industrial', shieldData['Industrial']);
+        updateShieldVisibility('University', shieldData['University']);
+        updateShieldVisibility('Housing', shieldData['Housing']);
+        updateShieldVisibility('Fort Sam', shieldData['Fort Sam']);
+        updateShieldVisibility('Traffic Lights', shieldData['Traffic Lights']);
+    });
+
+
+    function updateShieldVisibility(location, shieldValue) {
+        const shieldElement = document.getElementById(`${location}-shield`);
+        const shieldValueElement = document.getElementById(`${location}-shield-value`);
+
+        // Update shield value
+        shieldValueElement.textContent = shieldValue;
+
+        // Show shield if value is greater than 0, otherwise hide it
+        if (shieldValue > 0) {
+            shieldElement.classList.remove('hidden');
+        } else {
+            shieldElement.classList.add('hidden');
+        }
+    }
+
+
+    socket.on('update_compromise', (locations) => {
+        for (const location in locations) {
+            const compromiseElement = document.getElementById(`${location}-compromise`);
+            const shieldElement = document.getElementById(`${location}-shield`);
+            const shieldValueElement = document.getElementById(`${location}-shield-value`); // New element for shield value
+
+            console.log(`Location: ${location}, Compromise: ${locations[location].compromise}%, Shield: ${locations[location].shield || 0}`);
+
+            if (compromiseElement) {
+                compromiseElement.innerText = `${locations[location].compromise}% compromised`;
+            }
+
+            if (shieldValueElement) {
+                // Update the shield value next to the shield image
+                shieldValueElement.innerText = `${locations[location].shield || 0}`;
+            }
+
+            if (shieldElement) {
+                // Optionally, you can hide or show the shield image based on the shield value
+                if (locations[location].shield > 0) {
+                    shieldElement.style.display = 'inline'; // Show shield
+                } else {
+                    shieldElement.style.display = 'none'; // Hide shield
+                }
+            }
+        }
+    });
 
 
 

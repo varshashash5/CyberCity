@@ -4,18 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choose Your Side</title>
+    <style>
+        /*body, html {*/
+        /*    height: 100%;*/
+        /*    margin: 0;*/
+        /*    font-family: 'Arial', sans-serif;*/
+        /*    background-color: #000; !* Black background *!*/
+        /*    overflow: hidden;*/
+        /*    display: flex;*/
+        /*    align-items: center;*/
+        /*    justify-content: center;*/
+        /*}*/
+
+        #start, #waiting {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000; /* Ensure background blends with image */
+        }
+
+        #start img, #waiting img {
+            max-width: 95vw;  /* Up to 90% of the viewport width */
+            max-height: 95vh; /* Up to 90% of the viewport height */
+            width: auto;
+            height: auto;
+            object-fit: contain; /* Ensure the image fits within bounds gracefully */
+            transition: transform 0.3s ease; /* Smooth transition on scaling */
+        }
+
+        /* Optional: Add a subtle scaling effect on hover */
+        #start img:hover, #waiting img:hover {
+            transform: scale(1.22);
+        }
+
+        /* Media queries for smaller screens */
+        @media (max-width: 600px) {
+            #start img, #waiting img {
+                max-width: 95vw;  /* Allow slightly larger images on small screens */
+                max-height: 95vh;
+            }
+        }
+
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            /*display: flex;*/
+            align-items: center;
+            justify-content: center;
+            background-color: #000; /* Black background */
+            overflow: hidden;
+        }
+
+
+
+        #start img,
+        #waiting img {
+            max-width: 100%;  /* Ensure it doesn't exceed the viewport width */
+            max-height: 100%; /* Ensure it doesn't exceed the viewport height */
+            width: auto;      /* Maintain aspect ratio */
+            height: auto;     /* Maintain aspect ratio */
+            margin: auto;     /* Center the image */
+            display: block;   /* Ensure the image takes up its own line */
+        }
+
+
+
+        #start, #waiting, #choose-side {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        #start img {
+            max-width: 85%;
+            max-height: 85%;
+            height: auto;
+            width: auto;
+        }
+
+        #choose-side {
+            display: none;
+            flex-direction: row;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
+        }
+
+        #choose-side h1 {
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 5vw;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
+            z-index: 3;
+            margin: 0;
+        }
+
+        #hacker, #defender {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 5vw; /* Responsive font size */
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background-size: cover;
+            background-position: center;
+        }
+
+        #hacker {
+            background-image: linear-gradient(135deg, rgba(255, 0, 0, 0.8), rgba(0, 0, 0, 0.7)), url('cybercitybadhacker.jpeg'); /* Gradient over image */
+            background-blend-mode: overlay; /* Blend mode to enhance image */
+        }
+
+        #defender {
+            background-image: linear-gradient(135deg, rgba(0, 0, 255, 0.8), rgba(0, 0, 0, 0.7)), url('cybercitygooddefender.jpeg'); /* Gradient over image */
+            background-blend-mode: overlay; /* Blend mode to enhance image */
+        }
+
+        #hacker:hover {
+            transform: scale(1.05);
+            box-shadow: -30px 0 50px rgba(255, 255, 255, 0.8);
+        }
+
+        #defender:hover {
+            transform: scale(1.05);
+            box-shadow: 30px 0 50px rgba(255, 255, 255, 0.8);
+            z-index: 2;
+
+        }
+
+
+        #hacker span, #defender span {
+            position: relative;
+            z-index: 2;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #hacker:before {
+            /*content: "😈";*/
+            font-size: 10vw; /* Responsive icon size */
+            display: block;
+            margin-bottom: 1vh;
+        }
+
+        #defender:before {
+            /*content: "😇";*/
+            font-size: 10vw; /* Responsive icon size */
+            display: block;
+            margin-bottom: 1vh;
+        }
+
+        @media (max-width: 600px) {
+            #hacker, #defender {
+                font-size: 7vw; /* Smaller font size for mobile */
+            }
+
+            #hacker:before, #defender:before {
+                font-size: 8vw; /* Smaller icon size for mobile */
+            }
+
+            #choose-side h1 {
+                font-size: 8vw; /* Smaller header font size for mobile */
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>Choose Your Side</h1>
-<a href="/hacker.html" onclick="logLogin('Hacker')">Hacker</a>
-<a href="/defender.html" onclick="logLogin('Defender')">Defender</a>
+<div id="start">
+    <img src="start.png" alt="Start">
+</div>
+<div id="waiting">
+    <img src="waiting.png" alt="Waiting for opponent...">
+</div>
+<div id="choose-side">
+    <h1>Choose Your Side</h1>
+    <a href="#" id="defender" onclick="chooseSide('Defender')"><span>Defender</span></a>
+    <a href="#" id="hacker" onclick="chooseSide('Hacker')"><span>Hacker</span></a>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 <script>
     const socket = io();
-    function logLogin(side) {
-        socket.emit('login', side);
-        console.log(`${side} has logged in`);
+    const startDiv = document.getElementById('start');
+    const waitingDiv = document.getElementById('waiting');
+    const chooseSideDiv = document.getElementById('choose-side');
+
+    // Show start image initially
+    startDiv.style.display = 'flex';
+
+    // Set up event listener to transition on any click
+    document.body.addEventListener('click', () => {
+        if (startDiv.style.display === 'flex') {
+            startDiv.style.display = 'none';
+            chooseSideDiv.style.display = 'flex';
+        }
+    });
+
+    function chooseSide(side) {
+        socket.emit('choose_side', side);
     }
+
+    // Listen for events from the server
+    socket.on('waiting_for_opponent', () => {
+        chooseSideDiv.style.display = 'none';
+        waitingDiv.style.display = 'flex';
+    });
+
+    socket.on('opponent_found', (side) => {
+        window.location.href = `/${side.toLowerCase()}.html`;
+    });
 </script>
 </body>
 </html>
