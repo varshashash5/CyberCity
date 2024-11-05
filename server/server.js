@@ -32,7 +32,7 @@ let gameState = {
         'Industrial': { compromise: 0, shield: 0 },
         'University': { compromise: 0, shield: 0 },
         'Housing': { compromise: 0, shield: 0 },
-        'Fort Sam': { compromise: 0, shield: 0 },
+        'Lackland': { compromise: 0, shield: 0 },
         'Traffic Lights': { compromise: 0, shield: 0 }
     },
     defenderCooldown: { 'Intrusion Detection': 0 } , // Cooldown for Intrusion Detection only
@@ -41,6 +41,18 @@ let gameState = {
         'Hacker': 100000
     }
 };
+
+let gameOverState = {
+    isGameOver: false,
+    winner: null,
+    hackerScore: 0,
+    defenderScore: 0,
+    restartClicked: {
+        defender: false,
+        hacker: false
+    }
+};
+
 
 let players = { hacker: null, defender: null };
 let restartRequests = { hacker: false, defender: false };
@@ -73,7 +85,6 @@ io.on('connection', (socket) => {
         } else {
             console.log('Unknown clientType received after if else if else.');
         }
-
         // Check if both clients are ready to restart the game
         if (restartRequests.hacker && restartRequests.defender) {
             console.log('Both clients ready. Resetting game state.');
@@ -86,8 +97,6 @@ io.on('connection', (socket) => {
             restartRequests = { hacker: false, defender: false };
         }
     });
-
-
 
     // Event for when a player chooses a side
     socket.on('choose_side', (side) => {
@@ -239,13 +248,11 @@ io.on('connection', (socket) => {
         let hackerScore = 0;
         let defenderScore = 0;
 
-        // Iterate through each location and assign points based on the compromise level
+        // Calculate scores based on the compromise level of each location
         for (const [location, status] of Object.entries(gameState.locationStatus)) {
             if (status && status.compromise !== undefined) {  // Ensure compromise is defined
                 const isCompromised = status.compromise >= 75;
-
-                // Fort Sam is worth 2 points, others are worth 1 point
-                const points = location === 'Fort Sam' ? 2 : 1;
+                const points = location === 'Lackland' ? 2 : 1;
 
                 if (isCompromised) {
                     hackerScore += points;  // Hacker gets points if compromised
@@ -257,17 +264,23 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Determine the winner based on the final scores
+        // Determine the winner based on final scores
         let winner = '';
         if (hackerScore > defenderScore) {
             winner = 'Hacker';
         } else if (defenderScore > hackerScore) {
             winner = 'Defender';
         } else {
-            winner = 'No one';  // Fallback in case of tie (shouldn't happen with Fort Sam)
+            winner = 'No one';  // Fallback for a tie (unlikely due to Lackland’s point value)
         }
 
-        // Emit the game over event with the final scores and winner
+        // Update the gameOverState with the scores and winner
+        gameOverState.isGameOver = true;
+        gameOverState.hackerScore = hackerScore;
+        gameOverState.defenderScore = defenderScore;
+        gameOverState.winner = winner;
+
+        // Emit the game over event with final scores and winner
         io.emit('game_over', {
             winner,
             hackerScore,
@@ -275,9 +288,7 @@ io.on('connection', (socket) => {
         });
     }
 
-
-
-
+// Login or Reconnect Logic
     socket.on('login', (side, ackCallback) => {
         console.log(`${side} logged in`);
         socket.side = side;
@@ -289,6 +300,7 @@ io.on('connection', (socket) => {
         if (currentState && currentState.disconnected) {
             currentState.socket = socket;
             currentState.disconnected = false;
+
             socket.emit(`${side.toLowerCase()}_game_message`, 'Reconnected as ' + side);
             if (ackCallback) ackCallback(`Reconnected as ${side}`);
             console.log(`${side} reconnected`);
@@ -297,13 +309,29 @@ io.on('connection', (socket) => {
                 emitGameMessage(otherSide, `${side} has reconnected`);
             }
 
-            if (gameStarted) {
+            // If the game is over, send the stored scores from gameOverState
+            if (gameOver) {
+                restartRequests[side] = true;
+
+                socket.emit('game_over', {
+                    winner: gameOverState.winner || 'No one',
+                    hackerScore: gameOverState.hackerScore,
+                    defenderScore: gameOverState.defenderScore
+                });
+            } else if (gameStarted) {
+                // Emit current game state details upon reconnection if game is ongoing
                 socket.emit('hide_ready_buttons');
                 socket.emit('round_update', roundCounter);
                 socket.emit('turn', currentTurn);
                 socket.emit('player_turn_status', {
                     isYourTurn: side === currentTurn
                 });
+                socket.emit('budget_update', {
+                    defenderBudget: gameState.budgets.Defender,
+                    hackerBudget: gameState.budgets.Hacker
+                });
+                socket.emit('update_shield_values', gameState.locationStatus);
+                socket.emit('update_compromise', gameState.locationStatus);
             }
         } else {
             gameState[side.toLowerCase()] = { socket: socket, disconnected: false };
@@ -317,6 +345,8 @@ io.on('connection', (socket) => {
         }
     });
 
+
+// Handle Disconnections
     socket.on('disconnect', () => {
         if (socket.side) {
             let currentSide = socket.side;
@@ -453,54 +483,6 @@ io.on('connection', (socket) => {
     });
 
 
-    function resetGameState() {
-        // Reset individual game state variables
-        selectedAction = null;
-        selectedLocation = null;
-        currentTurn = 'Defender';  // Resetting turn to the Defender
-        defenderReady = false;
-        hackerReady = false;
-        startMessageSent = false;
-        turnCounter = 0;  // Reset turn counter to 0
-        roundCounter = 1;  // Reset round counter to 1
-        gameOver = false;  // Ensure the game is not over
-        gameStarted = false;  // Mark that the game hasn't started
-
-        // Reset the entire game state object
-        gameState = {
-            defender: null,
-            hacker: null,
-            locationStatus: {
-                'Business': { compromise: 0, shield: 0 },
-                'Hospital': { compromise: 0, shield: 0 },
-                'Fire/Police': { compromise: 0, shield: 0 },
-                'Industrial': { compromise: 0, shield: 0 },
-                'University': { compromise: 0, shield: 0 },
-                'Housing': { compromise: 0, shield: 0 },
-                'Fort Sam': { compromise: 0, shield: 0 },
-                'Traffic Lights': { compromise: 0, shield: 0 }
-            },
-            defenderCooldown: { 'Intrusion Detection': 0 }, // Reset cooldown for 'Intrusion Detection'
-            budgets: {
-                'Defender': 100000,  // Reset budget for Defender
-                'Hacker': 100000  // Reset budget for Hacker
-            }
-        };
-
-        // Reset other game control variables
-        players = { hacker: null, defender: null };  // Reset players
-        restartRequests = { hacker: false, defender: false };  // Reset restart requests
-        extraTurnFlag = false;  // Reset extra turn flag
-
-        console.log("Game state has been reset. This is in the resetGameState function right above game_reset emit");
-
-        // Emit the reset event to all clients
-        io.emit('game_reset');
-    }
-
-
-
-
     function checkTurn(side, socket) {
         if (gameOver) {
             emitGameMessage(side, 'The game has ended.');
@@ -587,9 +569,116 @@ io.on('connection', (socket) => {
         }
     }
 
+    ///
+
+    socket.on('reconnect_request', () => {
+        // Check if the game has already ended
+        if (gameOverState.isGameOver) {
+            const side = (socket.id === defenderSocketId) ? 'defender' : 'hacker';
+
+            // Log current gameOverState to troubleshoot
+            console.log("Reconnecting player:", side);
+            console.log("Current gameOverState:", gameOverState);
+
+            // Send game over modal data to reconnecting client with stored winner and scores
+            socket.emit('game_over', {
+                winner: gameOverState.winner,
+                hackerScore: gameOverState.hackerScore,
+                defenderScore: gameOverState.defenderScore
+            });
+
+            // If the player hasn’t clicked restart yet, simulate it
+            if (!gameOverState.restartClicked[side]) {
+                gameOverState.restartClicked[side] = true;
+                checkForGameRestart();
+            }
+        } else {
+            // Send regular game state if game hasn’t ended
+            socket.emit('send_full_state', {
+                defenderBudget: gameState.budgets.Defender,
+                hackerBudget: gameState.budgets.Hacker,
+                locationStatus: gameState.locationStatus,
+                roundCounter: roundCounter,
+                currentTurn: currentTurn,
+                isYourTurn: (socket.id === defenderSocketId && currentTurn === 'Defender')
+            });
+        }
+    });
 
 
 });
+
+// Check for Game Restart Function
+function checkForGameRestart() {
+    if (gameOverState.restartClicked.defender && gameOverState.restartClicked.hacker) {
+        resetGameState();
+    }
+}
+
+// Function to handle game end and set gameOverState
+function handleGameEnd(winner, hackerScore, defenderScore) {
+    // Set game over state with final scores
+    gameOverState.isGameOver = true;
+    gameOverState.winner = winner;
+    gameOverState.hackerScore = hackerScore;
+    gameOverState.defenderScore = defenderScore;
+    gameOverState.restartClicked.defender = false;
+    gameOverState.restartClicked.hacker = false;
+
+    // Emit the game over event with final scores
+    io.emit('game_over', { winner, hackerScore, defenderScore });
+}
+
+// Reset Game State Function
+function resetGameState() {
+    selectedAction = null;
+    selectedLocation = null;
+    currentTurn = 'Defender';
+    defenderReady = false;
+    hackerReady = false;
+    startMessageSent = false;
+    turnCounter = 0;
+    roundCounter = 1;
+    gameOver = false;
+    gameStarted = false;
+
+    // Reset gameState but keep gameOverState until reset is emitted
+    gameState = {
+        defender: null,
+        hacker: null,
+        locationStatus: {
+            'Business': { compromise: 0, shield: 0 },
+            'Hospital': { compromise: 0, shield: 0 },
+            'Fire/Police': { compromise: 0, shield: 0 },
+            'Industrial': { compromise: 0, shield: 0 },
+            'University': { compromise: 0, shield: 0 },
+            'Housing': { compromise: 0, shield: 0 },
+            'Lackland': { compromise: 0, shield: 0 },
+            'Traffic Lights': { compromise: 0, shield: 0 }
+        },
+        defenderCooldown: { 'Intrusion Detection': 0 },
+        budgets: {
+            'Defender': 100000,
+            'Hacker': 100000
+        }
+    };
+
+    players = { hacker: null, defender: null };
+    restartRequests = { hacker: false, defender: false };
+    extraTurnFlag = false;
+
+    console.log("Game state has been reset.");
+
+    // Emit the reset event to all clients
+    io.emit('game_reset');
+
+    // Only reset gameOverState after the reset is emitted
+    gameOverState.isGameOver = false;
+    gameOverState.winner = null;
+    gameOverState.hackerScore = 0;
+    gameOverState.defenderScore = 0;
+    gameOverState.restartClicked = { defender: false, hacker: false };
+}
 
 server.listen(3000, () => {
     console.log('Server is running on port 3000');
